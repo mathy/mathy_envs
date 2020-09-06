@@ -152,6 +152,45 @@ def observations_to_window(
     return output
 
 
+class MathyAgentState:
+    """The state related to an agent for a given environment state"""
+
+    moves_remaining: int
+    problem: str
+    problem_type: str
+    reward: float
+    action: ActionType
+    history: List[MathyEnvStateStep]
+
+    def __init__(
+        self,
+        moves_remaining: int,
+        problem: str,
+        problem_type: str,
+        reward: float = 0.0,
+        history: Optional[List[MathyEnvStateStep]] = None,
+    ):
+        self.moves_remaining = moves_remaining
+        self.problem = problem
+        self.reward = reward
+        self.problem_type = problem_type
+        self.history = (
+            history[:]
+            if history is not None
+            else [MathyEnvStateStep(problem, (-1, -1))]
+        )
+
+    @classmethod
+    def copy(cls, from_state: "MathyAgentState") -> "MathyAgentState":
+        return MathyAgentState(
+            moves_remaining=from_state.moves_remaining,
+            problem=from_state.problem,
+            reward=from_state.reward,
+            problem_type=from_state.problem_type,
+            history=from_state.history,
+        )
+
+
 class MathyEnvState(object):
     """Class for holding environment state and extracting features
     to be passed to the policy/value neural network.
@@ -186,10 +225,10 @@ class MathyEnvState(object):
             self.agent = MathyAgentState.copy(state.agent)
 
     @classmethod
-    def copy(cls, from_state) -> "MathyEnvState":
+    def copy(cls, from_state: "MathyEnvState") -> "MathyEnvState":
         return MathyEnvState(state=from_state)
 
-    def clone(self):
+    def clone(self) -> "MathyEnvState":
         return MathyEnvState(state=self)
 
     def get_out_state(
@@ -309,42 +348,3 @@ class MathyEnvState(object):
     def to_np(self) -> np.ndarray:
         """Convert a state object into a numpy representation"""
         return np.array([ord(c) for c in self.to_string()])
-
-
-class MathyAgentState:
-    """The state related to an agent for a given environment state"""
-
-    moves_remaining: int
-    problem: str
-    problem_type: str
-    reward: float
-    action: ActionType
-    history: List[MathyEnvStateStep]
-
-    def __init__(
-        self,
-        moves_remaining,
-        problem,
-        problem_type,
-        reward=0.0,
-        history=None,
-    ):
-        self.moves_remaining = moves_remaining
-        self.problem = problem
-        self.reward = reward
-        self.problem_type = problem_type
-        self.history = (
-            history[:]
-            if history is not None
-            else [MathyEnvStateStep(problem, (-1, -1))]
-        )
-
-    @classmethod
-    def copy(cls, from_state: "MathyAgentState"):
-        return MathyAgentState(
-            moves_remaining=from_state.moves_remaining,
-            problem=from_state.problem,
-            reward=from_state.reward,
-            problem_type=from_state.problem_type,
-            history=from_state.history,
-        )

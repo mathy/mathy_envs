@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..envs.poly_simplify_blockers import PolySimplifyBlockers
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .mathy_gym_env import MathyGymEnv, safe_register
@@ -8,7 +10,7 @@ from .mathy_gym_env import MathyGymEnv, safe_register
 
 
 class GymPolynomialBlockers(MathyGymEnv):
-    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs):
+    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs: Any):
         super(GymPolynomialBlockers, self).__init__(
             env_class=PolySimplifyBlockers,
             env_problem_args=MathyEnvProblemArgs(difficulty=difficulty),
@@ -17,21 +19,21 @@ class GymPolynomialBlockers(MathyGymEnv):
 
 
 class PolynomialBlockersEasy(GymPolynomialBlockers):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialBlockersEasy, self).__init__(
             difficulty=MathyEnvDifficulty.easy, **kwargs
         )
 
 
 class PolynomialBlockersNormal(GymPolynomialBlockers):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialBlockersNormal, self).__init__(
             difficulty=MathyEnvDifficulty.normal, **kwargs
         )
 
 
 class PolynomialBlockersHard(GymPolynomialBlockers):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialBlockersHard, self).__init__(
             difficulty=MathyEnvDifficulty.hard, **kwargs
         )

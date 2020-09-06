@@ -1,3 +1,5 @@
+from typing import List, Tuple, Union
+
 import numpy as np
 from gym import spaces
 
@@ -9,12 +11,12 @@ class MaskedDiscrete(spaces.Discrete):
     """
     mask: np.array
 
-    def __init__(self, n, mask):
+    def __init__(self, n: int, mask: Union[List[int], Tuple[int, ...]]):
         assert isinstance(mask, (tuple, list))
         assert len(mask) == n
         self.mask = np.array(mask)
         super(MaskedDiscrete, self).__init__(n)
 
-    def sample(self):
+    def sample(self) -> int:
         probability = self.mask / np.sum(self.mask)
         return self.np_random.choice(self.n, p=probability)

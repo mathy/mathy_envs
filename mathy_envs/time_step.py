@@ -32,7 +32,9 @@ times.
 """
 import collections
 
-import numpy as np
+import numpy
+
+from mathy_envs.state import MathyObservation
 
 
 class TimeStep(
@@ -42,7 +44,7 @@ class TimeStep(
 ):
     __slots__ = ()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(self))
 
 
@@ -50,18 +52,24 @@ class StepType(object):
     """Defines the status of a `TimeStep` within a sequence."""
 
     # Denotes the first `TimeStep` in a sequence.
-    FIRST = np.asarray(0, dtype=np.int32)
+    FIRST = numpy.array([0], dtype="int32")
     # Denotes any `TimeStep` in a sequence that is not FIRST or LAST.
-    MID = np.asarray(1, dtype=np.int32)
+    MID = numpy.array([1], dtype="int32")
     # Denotes the last `TimeStep` in a sequence.
-    LAST = np.asarray(2, dtype=np.int32)
+    LAST = numpy.array([2], dtype="int32")
 
 
-def transition(observation, reward, discount=1.0):
+def transition(
+    observation: MathyObservation, reward: float, discount: float = 1.0
+) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set equal to `StepType.MID`."""
     return TimeStep(StepType.MID, reward, discount, observation)
 
 
-def termination(observation, reward):
+def termination(observation: MathyObservation, reward: float) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`."""
     return TimeStep(StepType.LAST, reward, 00, observation)
+
+
+def is_terminal_transition(transition: TimeStep) -> bool:
+    return bool(transition.step_type == StepType.LAST)

@@ -1,4 +1,4 @@
-from typing import Optional, Type, Union
+from typing import Any, Optional, Type, Union
 
 import gym
 import numpy as np
@@ -7,8 +7,9 @@ from mathy_core.rule import ExpressionChangeRule
 
 from ..env import MathyEnv
 from ..state import MathyEnvState, MathyObservation
+from ..time_step import is_terminal_transition
 from ..types import ActionType, MathyEnvProblemArgs
-from ..util import is_terminal_transition, pad_array
+from ..util import pad_array
 from .masked_discrete import MaskedDiscrete
 
 
@@ -30,7 +31,7 @@ class MathyGymEnv(gym.Env):
         env_max_moves: int = 64,
         np_observation: bool = False,
         repeat_problem: bool = False,
-        **env_kwargs,
+        **env_kwargs: Any,
     ):
         self.state = None
         self.repeat_problem = repeat_problem
@@ -52,7 +53,7 @@ class MathyGymEnv(gym.Env):
             return self.mathy.get_agent_actions_count(self.state)
         return self.mathy.action_size
 
-    def step(self, action: ActionType):
+    def step(self, action: ActionType) -> Union[MathyObservation, np.ndarray]:
         assert self.state is not None, "call reset() before stepping the environment"
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         done = is_terminal_transition(transition)
@@ -82,10 +83,11 @@ class MathyGymEnv(gym.Env):
             return np.vstack((nodes, mask))
         return observation
 
-    def reset(self):
+    def reset(self) -> Union[MathyObservation, np.ndarray]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
         if self.repeat_problem:
+            assert self._challenge is not None
             self.state = MathyEnvState.copy(self._challenge)
         else:
             self.state, self.problem = self.mathy.get_initial_state(
@@ -93,7 +95,9 @@ class MathyGymEnv(gym.Env):
             )
         return self._observe(self.state)
 
-    def reset_with_input(self, problem_text: str, max_moves=16):
+    def reset_with_input(
+        self, problem_text: str, max_moves: int = 16
+    ) -> Union[MathyObservation, np.ndarray]:
         # If the episode is being reset because it ended, assert the validity
         # of the last problem outcome
         if self.state is not None:
@@ -107,7 +111,7 @@ class MathyGymEnv(gym.Env):
         last_action: ActionType = (-1, -1),
         last_reward: float = 0.0,
         last_change: Optional[ExpressionChangeRule] = None,
-    ):
+    ) -> None:
         assert self.state is not None, "call reset() before rendering the env"
         action_name = "initial"
         token_index = -1
@@ -125,9 +129,9 @@ class MathyGymEnv(gym.Env):
         )
 
 
-def safe_register(id: str, **kwargs):
+def safe_register(id: str, **kwargs: Any) -> None:
     """Ignore re-register errors."""
     try:
-        return register(id, **kwargs)
+        register(id, **kwargs)
     except gym.error.Error:
         pass

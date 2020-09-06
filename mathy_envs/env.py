@@ -1,6 +1,6 @@
 import random
 from itertools import groupby
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import numpy as np
 from mathy_core.expressions import STOP, MathExpression
@@ -18,8 +18,8 @@ from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
 from .state import MathyEnvState, MathyEnvStateStep, MathyObservation
+from .time_step import is_terminal_transition
 from .types import ActionType, EnvRewards, MathyEnvProblem, MathyEnvProblemArgs
-from .util import is_terminal_transition
 
 
 class MathyEnv:
@@ -72,7 +72,7 @@ class MathyEnv:
         """Return the number of available actions"""
         return len(self.rules)
 
-    def finalize_state(self, state: MathyEnvState):
+    def finalize_state(self, state: MathyEnvState) -> None:
         """Perform final checks on a problem state, to ensure the episode yielded
         results that were uncorrupted by transformation errors."""
         from_timestep: MathyEnvStateStep = state.agent.history[0]
@@ -176,6 +176,7 @@ class MathyEnv:
             self.get_valid_moves(env_state), parser=self.parser
         )
         root = expression.get_root()
+        assert isinstance(root, MathExpression)
 
         # Subclass specific win conditions happen here. Custom win-conditions
         # outside of that can override this method entirely.
@@ -273,7 +274,7 @@ class MathyEnv:
                 )
                 transition = time_step.transition(obs, EnvRewards.INVALID_MOVE)
                 return out_env, transition, ExpressionChangeRule(BaseRule())
-
+        assert token is not None
         change = operation.apply_to(token.clone_from_root())
         assert change.result is not None
         root = change.result.get_root()
@@ -301,7 +302,7 @@ class MathyEnv:
         change: ExpressionChangeRule = None,
         change_reward: float = 0.0,
         pretty: bool = False,
-    ):
+    ) -> None:
         """Render the given state to stdout for visualization"""
         print(
             self.render_state(
@@ -362,19 +363,20 @@ class MathyEnv:
         """Render the given state to a string suitable for printing to a log"""
         changed_problem = env_state.agent.problem
         if change is not None and change.result is not None:
-            changed_problem = change.result.get_root().terminal_text
+            root = change.result.get_root()
+            assert isinstance(root, MathExpression)
+            changed_problem = root.terminal_text
 
         action_name = f"{action_name.lower()}({token_index})"
         output = """{:<25} | {}""".format(action_name.lower(), changed_problem)
 
-        def get_move_shortname(index, move):
+        def get_move_shortname(index: int, move: int) -> str:
             if move == 0:
                 return "--"
             if move >= len(self.rules):
                 return "xx"
             return self.rules[index].code.lower()
 
-        token = "{}".format(token_index).zfill(3)
         moves_left = str(env_state.agent.moves_remaining).zfill(2)
         valid_rules = self.get_valid_rules(env_state)
         valid_moves = self.get_valid_moves(env_state)
@@ -390,14 +392,14 @@ class MathyEnv:
     def random_action(
         self,
         expression: MathExpression,
-        rule: Union[Type[BaseRule], Tuple[Type[BaseRule], ...]] = None,
+        rule: Type[BaseRule] = None,
     ) -> int:
         """Get a random action index that represents a particular rule"""
 
         if rule is not None:
             found = False
             for r in self.rules:
-                if isinstance(r, rule):
+                if isinstance(r, rule):  # type:ignore
                     found = True
                     break
             if found is False:
@@ -405,12 +407,12 @@ class MathyEnv:
                     "The action {rule} does not exist in the environment rule list"
                 )
             actions = np.nonzero(self.get_actions_for_node(expression, [rule]))
-            action = np.random.choice(actions[0])
+            action = random.choice(actions[0])
             return action
 
         actions = np.nonzero(self.get_actions_for_node(expression))
         try:
-            action = np.random.choice(random.choice(actions))
+            action = random.choice(random.choice(actions))
         except ValueError:
             raise ValueError(f"no valid actions for expression: {expression}")
         return action
@@ -449,12 +451,13 @@ class MathyEnv:
         count = 0
         result = None
 
-        def visit_fn(node, depth, data):
+        def visit_fn(node: MathExpression, depth: int, data: Any) -> Optional[str]:
             nonlocal result, count
             result = node
             if count == index:
                 return STOP
             count = count + 1
+            return None
 
         expression.visit_inorder(visit_fn)
         return result
@@ -517,11 +520,12 @@ class MathyEnv:
         rule_count = len(self.rules)
         actions = [[0] * node_count for _ in range(rule_count)]
         for rule_index, rule in enumerate(self.rules):
-            if rule_list is not None and not isinstance(rule, tuple(rule_list)):
-                continue
+            if rule_list is not None:
+                if not isinstance(rule, tuple(rule_list)):  # type:ignore
+                    continue
             nodes = rule.find_nodes(expression)
             for node in nodes:
-                # action_index = (node.r_index * rule_count) + rule_index
+                assert node.r_index is not None
                 actions[rule_index][node.r_index] = 1
         if rule_list is None:
             self.valid_actions_mask_cache[key] = actions[:]

@@ -1,11 +1,5 @@
 from typing import Any, List
 
-from . import time_step
-
-
-def is_terminal_transition(transition: time_step.TimeStep) -> bool:
-    return bool(transition.step_type == time_step.StepType.LAST)
-
 
 def pad_array(in_list: List[Any], max_length: int, value: Any = 0) -> List[Any]:
     """Pad a list to the given size with the given padding value.

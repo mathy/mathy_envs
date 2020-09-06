@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..envs.poly_haystack_like_terms import PolyHaystackLikeTerms
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .mathy_gym_env import MathyGymEnv, safe_register
@@ -8,7 +10,7 @@ from .mathy_gym_env import MathyGymEnv, safe_register
 
 
 class GymPolynomialLikeTermsHaystack(MathyGymEnv):
-    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs):
+    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs: Any):
         super(GymPolynomialLikeTermsHaystack, self).__init__(
             env_class=PolyHaystackLikeTerms,
             env_problem_args=MathyEnvProblemArgs(difficulty=difficulty),
@@ -17,21 +19,21 @@ class GymPolynomialLikeTermsHaystack(MathyGymEnv):
 
 
 class PolynomialLikeTermsHaystackEasy(GymPolynomialLikeTermsHaystack):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialLikeTermsHaystackEasy, self).__init__(
             difficulty=MathyEnvDifficulty.easy, **kwargs
         )
 
 
 class PolynomialLikeTermsHaystackNormal(GymPolynomialLikeTermsHaystack):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialLikeTermsHaystackNormal, self).__init__(
             difficulty=MathyEnvDifficulty.normal, **kwargs
         )
 
 
 class PolynomialLikeTermsHaystackHard(GymPolynomialLikeTermsHaystack):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialLikeTermsHaystackHard, self).__init__(
             difficulty=MathyEnvDifficulty.hard, **kwargs
         )

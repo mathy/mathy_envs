@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..envs.poly_combine_in_place import PolyCombineInPlace
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .mathy_gym_env import MathyGymEnv, safe_register
@@ -8,7 +10,7 @@ from .mathy_gym_env import MathyGymEnv, safe_register
 
 
 class GymPolynomialCombineInPlace(MathyGymEnv):
-    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs):
+    def __init__(self, difficulty: MathyEnvDifficulty, **kwargs: Any):
         super(GymPolynomialCombineInPlace, self).__init__(
             env_class=PolyCombineInPlace,
             env_problem_args=MathyEnvProblemArgs(difficulty=difficulty),
@@ -17,21 +19,21 @@ class GymPolynomialCombineInPlace(MathyGymEnv):
 
 
 class PolynomialCombineInPlaceEasy(GymPolynomialCombineInPlace):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialCombineInPlaceEasy, self).__init__(
             difficulty=MathyEnvDifficulty.easy, **kwargs
         )
 
 
 class PolynomialCombineInPlaceNormal(GymPolynomialCombineInPlace):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialCombineInPlaceNormal, self).__init__(
             difficulty=MathyEnvDifficulty.normal, **kwargs
         )
 
 
 class PolynomialCombineInPlaceHard(GymPolynomialCombineInPlace):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolynomialCombineInPlaceHard, self).__init__(
             difficulty=MathyEnvDifficulty.hard, **kwargs
         )
