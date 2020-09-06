@@ -1,0 +1,5 @@
+include requirements.txt
+include requirements-dev.txt
+include README.md
+include mathy_envs/py.typed
+recursive-include mathy_envs/tests *

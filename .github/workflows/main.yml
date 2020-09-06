@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup Packages
+        run: sh tools/setup.sh
+      - name: Build Packages
+        run: sh tools/build.sh
+      - name: Test Packages
+        run: sh tools/test.sh
+      - name: Report Code Coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: sh tools/codecov.sh
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: sh tools/semantic-release.sh
+      - name: Deploy to PyPi
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: sh tools/deploy.sh

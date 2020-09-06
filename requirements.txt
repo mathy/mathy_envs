@@ -1,0 +1,5 @@
+numpy
+colr
+pydantic>=1.0.0
+wasabi
+mathy_core>=0.7.20
