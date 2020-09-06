@@ -35,6 +35,6 @@ class PolynomialsHard(GymPolynomialSimplification):
         )
 
 
-safe_register(id="mathy-poly-easy-v0", entry_point="mathy.envs.gym:PolynomialsEasy")
-safe_register(id="mathy-poly-normal-v0", entry_point="mathy.envs.gym:PolynomialsNormal")
-safe_register(id="mathy-poly-hard-v0", entry_point="mathy.envs.gym:PolynomialsHard")
+safe_register(id="mathy-poly-easy-v0", entry_point="mathy_envs.gym:PolynomialsEasy")
+safe_register(id="mathy-poly-normal-v0", entry_point="mathy_envs.gym:PolynomialsNormal")
+safe_register(id="mathy-poly-hard-v0", entry_point="mathy_envs.gym:PolynomialsHard")

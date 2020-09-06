@@ -35,8 +35,8 @@ class BinomialsHard(GymBinomialDistribution):
         )
 
 
-safe_register(id="mathy-binomial-easy-v0", entry_point="mathy.envs.gym:BinomialsEasy")
+safe_register(id="mathy-binomial-easy-v0", entry_point="mathy_envs.gym:BinomialsEasy")
 safe_register(
-    id="mathy-binomial-normal-v0", entry_point="mathy.envs.gym:BinomialsNormal"
+    id="mathy-binomial-normal-v0", entry_point="mathy_envs.gym:BinomialsNormal"
 )
-safe_register(id="mathy-binomial-hard-v0", entry_point="mathy.envs.gym:BinomialsHard")
+safe_register(id="mathy-binomial-hard-v0", entry_point="mathy_envs.gym:BinomialsHard")

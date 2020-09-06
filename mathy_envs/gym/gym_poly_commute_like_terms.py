@@ -41,13 +41,13 @@ class PolynomialCommuteLikeTermsHard(GymPolynomialCommuteLikeTerms):
 
 safe_register(
     id="mathy-poly-commute-easy-v0",
-    entry_point="mathy.envs.gym:PolynomialCommuteLikeTermsEasy",
+    entry_point="mathy_envs.gym:PolynomialCommuteLikeTermsEasy",
 )
 safe_register(
     id="mathy-poly-commute-normal-v0",
-    entry_point="mathy.envs.gym:PolynomialCommuteLikeTermsNormal",
+    entry_point="mathy_envs.gym:PolynomialCommuteLikeTermsNormal",
 )
 safe_register(
     id="mathy-poly-commute-hard-v0",
-    entry_point="mathy.envs.gym:PolynomialCommuteLikeTermsHard",
+    entry_point="mathy_envs.gym:PolynomialCommuteLikeTermsHard",
 )

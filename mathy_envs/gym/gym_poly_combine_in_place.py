@@ -41,13 +41,13 @@ class PolynomialCombineInPlaceHard(GymPolynomialCombineInPlace):
 
 safe_register(
     id="mathy-poly-combine-easy-v0",
-    entry_point="mathy.envs.gym:PolynomialCombineInPlaceEasy",
+    entry_point="mathy_envs.gym:PolynomialCombineInPlaceEasy",
 )
 safe_register(
     id="mathy-poly-combine-normal-v0",
-    entry_point="mathy.envs.gym:PolynomialCombineInPlaceNormal",
+    entry_point="mathy_envs.gym:PolynomialCombineInPlaceNormal",
 )
 safe_register(
     id="mathy-poly-combine-hard-v0",
-    entry_point="mathy.envs.gym:PolynomialCombineInPlaceHard",
+    entry_point="mathy_envs.gym:PolynomialCombineInPlaceHard",
 )

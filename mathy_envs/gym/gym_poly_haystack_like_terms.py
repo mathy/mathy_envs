@@ -41,13 +41,13 @@ class PolynomialLikeTermsHaystackHard(GymPolynomialLikeTermsHaystack):
 
 safe_register(
     id="mathy-poly-like-terms-haystack-easy-v0",
-    entry_point="mathy.envs.gym:PolynomialLikeTermsHaystackEasy",
+    entry_point="mathy_envs.gym:PolynomialLikeTermsHaystackEasy",
 )
 safe_register(
     id="mathy-poly-like-terms-haystack-normal-v0",
-    entry_point="mathy.envs.gym:PolynomialLikeTermsHaystackNormal",
+    entry_point="mathy_envs.gym:PolynomialLikeTermsHaystackNormal",
 )
 safe_register(
     id="mathy-poly-like-terms-haystack-hard-v0",
-    entry_point="mathy.envs.gym:PolynomialLikeTermsHaystackHard",
+    entry_point="mathy_envs.gym:PolynomialLikeTermsHaystackHard",
 )

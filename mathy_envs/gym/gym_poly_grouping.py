@@ -41,13 +41,13 @@ class PolynomialGroupingHard(GymPolynomialGrouping):
 
 safe_register(
     id="mathy-poly-grouping-easy-v0",
-    entry_point="mathy.envs.gym:PolynomialGroupingEasy",
+    entry_point="mathy_envs.gym:PolynomialGroupingEasy",
 )
 safe_register(
     id="mathy-poly-grouping-normal-v0",
-    entry_point="mathy.envs.gym:PolynomialGroupingNormal",
+    entry_point="mathy_envs.gym:PolynomialGroupingNormal",
 )
 safe_register(
     id="mathy-poly-grouping-hard-v0",
-    entry_point="mathy.envs.gym:PolynomialGroupingHard",
+    entry_point="mathy_envs.gym:PolynomialGroupingHard",
 )

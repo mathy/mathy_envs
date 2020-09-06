@@ -41,13 +41,13 @@ class PolynomialBlockersHard(GymPolynomialBlockers):
 
 safe_register(
     id="mathy-poly-blockers-easy-v0",
-    entry_point="mathy.envs.gym:PolynomialBlockersEasy",
+    entry_point="mathy_envs.gym:PolynomialBlockersEasy",
 )
 safe_register(
     id="mathy-poly-blockers-normal-v0",
-    entry_point="mathy.envs.gym:PolynomialBlockersNormal",
+    entry_point="mathy_envs.gym:PolynomialBlockersNormal",
 )
 safe_register(
     id="mathy-poly-blockers-hard-v0",
-    entry_point="mathy.envs.gym:PolynomialBlockersHard",
+    entry_point="mathy_envs.gym:PolynomialBlockersHard",
 )

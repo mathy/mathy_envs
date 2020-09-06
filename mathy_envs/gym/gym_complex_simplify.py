@@ -35,8 +35,8 @@ class ComplexTermsHard(GymComplexTerms):
         )
 
 
-safe_register(id="mathy-complex-easy-v0", entry_point="mathy.envs.gym:ComplexTermsEasy")
+safe_register(id="mathy-complex-easy-v0", entry_point="mathy_envs.gym:ComplexTermsEasy")
 safe_register(
-    id="mathy-complex-normal-v0", entry_point="mathy.envs.gym:ComplexTermsNormal"
+    id="mathy-complex-normal-v0", entry_point="mathy_envs.gym:ComplexTermsNormal"
 )
-safe_register(id="mathy-complex-hard-v0", entry_point="mathy.envs.gym:ComplexTermsHard")
+safe_register(id="mathy-complex-hard-v0", entry_point="mathy_envs.gym:ComplexTermsHard")
