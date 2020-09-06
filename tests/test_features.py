@@ -1,7 +1,5 @@
 from typing import List, Tuple
 
-import pytest
-
 from mathy_envs.envs.poly_simplify import PolySimplify
 from mathy_envs.state import MathyEnvState
 

@@ -1,21 +1,11 @@
-from typing import Any, Dict, List, Optional, Type
-
 from mathy_core.problems import (
     gen_move_around_blockers_one,
     gen_move_around_blockers_two,
     rand_bool,
 )
-from mathy_core.rule import BaseRule
-from mathy_core.rules import (
-    AssociativeSwapRule,
-    CommutativeSwapRule,
-    ConstantsSimplifyRule,
-    DistributiveFactorOutRule,
-)
 from numpy.random import randint
 
 from ..env import MathyEnvProblem
-from ..state import MathyEnvState
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .poly_simplify import PolySimplify
 

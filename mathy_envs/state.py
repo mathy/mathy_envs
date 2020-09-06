@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional
 
 import numpy as np
 from mathy_core.expressions import ConstantExpression, MathExpression, MathTypeKeys

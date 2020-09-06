@@ -1,8 +1,9 @@
-from mathy_envs.state import MathyEnvState
+import random
+
 from mathy_envs.env import MathyEnv
 from mathy_envs.envs.poly_simplify import PolySimplify
+from mathy_envs.state import MathyEnvState
 from mathy_envs.util import is_terminal_transition
-import random
 
 
 def test_mathy_env_jd():
@@ -16,7 +17,9 @@ def test_mathy_env_jd():
         random.shuffle(rule_indices)
         rule_nodes = rule_actions[rule_indices[0]]
         node_indices = [i for i, value in enumerate(rule_nodes) if value == 1]
-        env_state, value, changed = env.get_next_state(env_state, (rule_indices[0], node_indices[0]))
+        env_state, value, changed = env.get_next_state(
+            env_state, (rule_indices[0], node_indices[0])
+        )
     assert env_state.to_observation([]) is not None
 
 

@@ -1,5 +1,4 @@
-import math
-from typing import List, Optional, Tuple, Type, Union
+from typing import Optional, Type, Union
 
 import gym
 import numpy as np
@@ -15,7 +14,7 @@ from .masked_discrete import MaskedDiscrete
 
 class MathyGymEnv(gym.Env):
     """A small wrapper around Mathy envs to allow them to work with OpenAI Gym. The
-    agents currently use this env wrapper, but it could be dropped in the future. """
+    agents currently use this env wrapper, but it could be dropped in the future."""
 
     mathy: MathyEnv
     state: Optional[MathyEnvState]
@@ -68,7 +67,7 @@ class MathyGymEnv(gym.Env):
 
     def _observe(self, state: MathyEnvState) -> Union[MathyObservation, np.ndarray]:
         """Observe the environment at the given state, updating the observation
-        space and action space for the given state. """
+        space and action space for the given state."""
         action_mask = self.mathy.get_valid_moves(state)
         observation = self.mathy.state_to_observation(state)
         self.action_space.n = self.mathy.get_agent_actions_count(state)

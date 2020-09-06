@@ -1,5 +1,5 @@
-from ..poly_commute_like_terms import PolyCommuteLikeTerms
 from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..poly_commute_like_terms import PolyCommuteLikeTerms
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 #

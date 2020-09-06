@@ -1,17 +1,7 @@
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type
 
 from mathy_core.expressions import MathExpression
-from mathy_core.problems import (
-    gen_combine_terms_in_place,
-    get_rand_term_templates,
-    get_rand_vars,
-    mathy_term_string,
-    maybe_power,
-    rand_bool,
-    rand_op,
-    rand_var,
-    split_in_two_random,
-)
+from mathy_core.problems import get_rand_term_templates, mathy_term_string
 from mathy_core.rule import BaseRule
 from mathy_core.rules import (
     AssociativeSwapRule,
@@ -23,7 +13,6 @@ from mathy_core.rules import (
 )
 from mathy_core.util import TermEx, get_term_ex, get_terms
 from numpy import random
-from numpy.random import randint
 
 from .. import time_step
 from ..env import MathyEnvProblem

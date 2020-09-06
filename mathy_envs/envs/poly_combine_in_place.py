@@ -24,7 +24,7 @@ class PolyCombineInPlace(PolySimplify):
             1. distributive factor out the common element
             2. simplify the remaining constants
 
-         """
+        """
 
         return 2
 

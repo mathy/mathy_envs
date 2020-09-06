@@ -1,6 +1,6 @@
 import random
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 from mathy_core.expressions import STOP, MathExpression
@@ -14,16 +14,12 @@ from mathy_core.rules import (
     DistributiveMultiplyRule,
     VariableMultiplyRule,
 )
-from mathy_core.util import (
-    compare_expression_string_values,
-    raise_with_history,
-)
-
-from .util import is_terminal_transition
+from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
 from .state import MathyEnvState, MathyEnvStateStep, MathyObservation
 from .types import ActionType, EnvRewards, MathyEnvProblem, MathyEnvProblemArgs
+from .util import is_terminal_transition
 
 
 class MathyEnv:
@@ -92,7 +88,7 @@ class MathyEnv:
 
     def get_rewarding_actions(self, state: MathyEnvState) -> List[Type[BaseRule]]:
         """Get the list of rewarding action types. When these actions
-        are selected, the agent gets a positive reward. """
+        are selected, the agent gets a positive reward."""
         # NOTE: by default we give a positive reward for most actions taken. Reward
         #       values are only applied AFTER penalties, so things like reentrant
         #       states become negative reward even if their action is otherwise
@@ -134,7 +130,10 @@ class MathyEnv:
         generate its own dataset with no required configuration."""
         raise NotImplementedError("This must be implemented in a subclass")
 
-    def state_to_observation(self, state: MathyEnvState,) -> MathyObservation:
+    def state_to_observation(
+        self,
+        state: MathyEnvState,
+    ) -> MathyObservation:
         """Convert an environment state into an observation that can be used
         by a training agent."""
 
@@ -145,7 +144,7 @@ class MathyEnv:
     def get_win_signal(self, env_state: MathyEnvState) -> float:
         """Calculate the reward value for completing the episode. This is done
         so that the reward signal can be scaled based on the time it took to
-        complete the episode. """
+        complete the episode."""
         tiny = 3e-10
         total_moves = max(tiny, env_state.max_moves)
         # guard against divide by zero with max and a small value
@@ -248,7 +247,7 @@ class MathyEnv:
         next_state: env_state after applying action
 
         transition: the timestep that represents the state transition
-        
+
         change: the change descriptor describing the change that happened
         """
         agent = env_state.agent
@@ -330,7 +329,8 @@ class MathyEnv:
         history: List[MathyEnvStateStep] = env_state.agent.history[:]
         initial_step: MathyEnvStateStep = history.pop(0)
         curr_state: MathyEnvState = MathyEnvState(
-            problem=initial_step.raw, max_moves=env_state.max_moves,
+            problem=initial_step.raw,
+            max_moves=env_state.max_moves,
         )
         self.print_state(curr_state, "initial-state", pretty=pretty)
         while len(history) > 0:
@@ -501,9 +501,11 @@ class MathyEnv:
         return self.rules[time_step.action[0]]
 
     def get_actions_for_node(
-        self, expression: MathExpression, rule_list: List[Type[BaseRule]] = None,
+        self,
+        expression: MathExpression,
+        rule_list: List[Type[BaseRule]] = None,
     ) -> List[List[int]]:
-        """Return a valid actions mask for the given expression and rule list. 
+        """Return a valid actions mask for the given expression and rule list.
 
         Action masks are 1d lists of length (nodes * num_rules) where a 0 indicates
         the action is not valid in the current state, and a 1 indicates that it is

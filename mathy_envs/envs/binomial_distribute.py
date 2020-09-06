@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type
+from typing import Optional
 
 from mathy_core.expressions import MathExpression
 from mathy_core.problems import (
@@ -6,15 +6,8 @@ from mathy_core.problems import (
     gen_binomial_times_monomial,
     rand_bool,
 )
-from mathy_core.rule import BaseRule
-from mathy_core.rules import (
-    CommutativeSwapRule,
-    ConstantsSimplifyRule,
-    DistributiveMultiplyRule,
-    VariableMultiplyRule,
-)
 from mathy_core.util import get_terms, has_like_terms, is_preferred_term_form
-from numpy.random import randint, uniform
+from numpy.random import uniform
 
 from .. import time_step
 from ..env import MathyEnv, MathyEnvProblem
@@ -56,7 +49,7 @@ class BinomialDistribute(MathyEnv):
 
     def problem_fn(self, params: MathyEnvProblemArgs) -> MathyEnvProblem:
         """Given a set of parameters to control term generation, produce
-        2 binomials expressions connected by a multiplication. """
+        2 binomials expressions connected by a multiplication."""
         if params.difficulty == MathyEnvDifficulty.easy:
             if rand_bool(50):
                 text, complexity = gen_binomial_times_monomial(min_vars=2, max_vars=3)

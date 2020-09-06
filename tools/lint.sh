@@ -4,10 +4,10 @@ set -e
 . .env/bin/activate
 
 echo "========================= mypy"
-mypy pathy
+mypy mathy_envs
 echo "========================= flake8"
-flake8 pathy tests
+flake8 mathy_envs tests
 echo "========================= black"
-black pathy tests --check
+black mathy_envs tests --check
 echo "========================= pyright"
-npx pyright pathy tests
+npx pyright mathy_envs tests

@@ -1,7 +1,5 @@
-from gym.envs.registration import register
-
-from ..binomial_distribute import BinomialDistribute
 from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..binomial_distribute import BinomialDistribute
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 
@@ -36,5 +34,7 @@ class BinomialsHard(GymBinomialDistribution):
 
 
 safe_register(id="mathy-binomial-easy-v0", entry_point="mathy.envs.gym:BinomialsEasy")
-safe_register(id="mathy-binomial-normal-v0", entry_point="mathy.envs.gym:BinomialsNormal")
+safe_register(
+    id="mathy-binomial-normal-v0", entry_point="mathy.envs.gym:BinomialsNormal"
+)
 safe_register(id="mathy-binomial-hard-v0", entry_point="mathy.envs.gym:BinomialsHard")

@@ -1,5 +1,5 @@
-from ..complex_simplify import ComplexSimplify
 from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..complex_simplify import ComplexSimplify
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 
@@ -34,6 +34,7 @@ class ComplexTermsHard(GymComplexTerms):
 
 
 safe_register(id="mathy-complex-easy-v0", entry_point="mathy.envs.gym:ComplexTermsEasy")
-safe_register(id="mathy-complex-normal-v0", entry_point="mathy.envs.gym:ComplexTermsNormal")
+safe_register(
+    id="mathy-complex-normal-v0", entry_point="mathy.envs.gym:ComplexTermsNormal"
+)
 safe_register(id="mathy-complex-hard-v0", entry_point="mathy.envs.gym:ComplexTermsHard")
-

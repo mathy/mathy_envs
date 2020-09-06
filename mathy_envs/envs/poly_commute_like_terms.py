@@ -1,22 +1,12 @@
-from typing import Any, List, Optional, Type
+from typing import Optional
 
 from mathy_core.expressions import MathExpression
-from mathy_core.problems import (
-    gen_combine_terms_in_place,
-    gen_commute_haystack,
-    rand_bool,
-)
-from mathy_core.rule import BaseRule
-from mathy_core.rules import (
-    AssociativeSwapRule,
-    CommutativeSwapRule,
-    DistributiveFactorOutRule,
-)
-from mathy_core.util import TermEx, get_term_ex, get_terms
+from mathy_core.problems import gen_commute_haystack, rand_bool
+from mathy_core.rules import DistributiveFactorOutRule
 from numpy.random import randint
 
 from .. import time_step
-from ..env import MathyEnv, MathyEnvProblem
+from ..env import MathyEnvProblem
 from ..state import MathyEnvState, MathyObservation
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .poly_simplify import PolySimplify
@@ -45,7 +35,7 @@ class PolyCommuteLikeTerms(PolySimplify):
         features: MathyObservation,
     ) -> Optional[time_step.TimeStep]:
         """If the expression has any nodes that the DistributiveFactorOut rule
-        can be applied to, the problem is solved. """
+        can be applied to, the problem is solved."""
         if self.rule.find_node(expression) is not None:
             return time_step.termination(features, self.get_win_signal(env_state))
         return None
