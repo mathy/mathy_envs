@@ -1,5 +1,5 @@
-from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
-from ..poly_combine_in_place import PolyCombineInPlace
+from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..envs.poly_combine_in_place import PolyCombineInPlace
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 #

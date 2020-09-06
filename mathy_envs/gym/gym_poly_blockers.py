@@ -1,5 +1,5 @@
-from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
-from ..poly_simplify_blockers import PolySimplifyBlockers
+from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..envs.poly_simplify_blockers import PolySimplifyBlockers
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 #

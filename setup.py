@@ -22,9 +22,7 @@ def setup_package():
     with open(root / "requirements-dev.txt") as file:
         DEVELOPMENT_MODULES = [line.strip() for line in file if "-e" not in line]
 
-    extras = {
-        "dev": DEVELOPMENT_MODULES,
-    }
+    extras = {"dev": DEVELOPMENT_MODULES, "gym": ["gym"]}
     extras["all"] = [item for group in extras.values() for item in group]
 
     setup(

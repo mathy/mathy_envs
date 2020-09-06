@@ -1,5 +1,5 @@
-from ...types import MathyEnvDifficulty, MathyEnvProblemArgs
-from ..binomial_distribute import BinomialDistribute
+from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
+from ..envs.binomial_distribute import BinomialDistribute
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 
