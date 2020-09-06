@@ -1,5 +1,5 @@
-from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from ..envs.poly_haystack_like_terms import PolyHaystackLikeTerms
+from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 #

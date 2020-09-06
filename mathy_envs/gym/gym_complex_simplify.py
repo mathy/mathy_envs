@@ -1,5 +1,5 @@
-from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from ..envs.complex_simplify import ComplexSimplify
+from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .mathy_gym_env import MathyGymEnv, safe_register
 
 
