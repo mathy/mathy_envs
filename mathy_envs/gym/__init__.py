@@ -2,7 +2,12 @@ try:
     import gym
 except ImportError:
     raise ImportError(
-        'The "gym" library must be installed to use mathy_envs.gym submodule'
+        """
+The "gym" library must be installed to use mathy_envs.gym submodule. Please try:
+
+    pip install mathy_envs[gym]
+
+"""
     )
 from .gym_binomial_distribute import *  # noqa
 from .gym_complex_simplify import *  # noqa
