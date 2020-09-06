@@ -1,6 +1,6 @@
 # mathy_envs: Learning environments for solving math problems
 
-[![Build status](https://travis-ci.com/mathy/mathy_envs.svg?branch=master)](https://travis-ci.com/mathy/mathy_envs)
+![Build](https://github.com/mathy/mathy_envs/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/mathy/mathy_envs/branch/master/graph/badge.svg)](https://codecov.io/gh/mathy/mathy_envs)
 [![Pypi version](https://badgen.net/pypi/v/mathy-envs)](https://pypi.org/project/mathy-envs/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
