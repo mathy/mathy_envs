@@ -1,5 +1,5 @@
 try:
-    import gym
+    import gym  # noqa
 except ImportError:
     raise ImportError(
         """

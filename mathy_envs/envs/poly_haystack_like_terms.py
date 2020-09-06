@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Type
+import random
+from typing import Any, Dict, List, Optional, Type
 
 from mathy_core.expressions import MathExpression
 from mathy_core.problems import get_rand_term_templates, mathy_term_string
@@ -12,7 +13,6 @@ from mathy_core.rules import (
     VariableMultiplyRule,
 )
 from mathy_core.util import TermEx, get_term_ex, get_terms
-from numpy import random
 
 from .. import time_step
 from ..env import MathyEnvProblem
@@ -33,7 +33,7 @@ class PolyHaystackLikeTerms(PolySimplify):
     that can identify like terms in a large expression tree.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(PolyHaystackLikeTerms, self).__init__(**kwargs)
 
     def get_env_namespace(self) -> str:
@@ -85,6 +85,7 @@ class PolyHaystackLikeTerms(PolySimplify):
         all_indices: Dict[str, List[int]] = {}
         max_index = 0
         for term_node in term_nodes:
+            assert term_node is not None and term_node.r_index is not None
             max_index = max(max_index, term_node.r_index)
             ex: Optional[TermEx] = get_term_ex(term_node)
             if ex is None:
@@ -117,6 +118,7 @@ class PolyHaystackLikeTerms(PolySimplify):
         if env_state.agent.moves_remaining <= 0:
             distances = []
             if like_indices is not None:
+                assert action_node is not None and action_node.r_index is not None
                 for index in like_indices:
                     distances.append(abs(index - action_node.r_index))
                 loss_magnitude = min(distances) / max_index
@@ -150,9 +152,8 @@ class PolyHaystackLikeTerms(PolySimplify):
         for tpl in diff_term_tpls:
             out_terms.append(tpl.make())
         random.shuffle(out_terms)
-        problem = f" + ".join(out_terms)
+        problem = " + ".join(out_terms)
         return problem
-        # return "5i + i + 9i^2"
 
     def problem_fn(self, params: MathyEnvProblemArgs) -> MathyEnvProblem:
         if params.difficulty == MathyEnvDifficulty.easy:

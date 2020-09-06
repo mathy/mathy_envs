@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from mathy_core.expressions import MathExpression
 from mathy_core.problems import gen_simplify_multiple_terms
@@ -19,7 +19,7 @@ class PolySimplify(MathyEnv):
      operators are excluded. This is a good area for improvement.
     """
 
-    def __init__(self, ops: List[str] = None, **kwargs):
+    def __init__(self, ops: List[str] = None, **kwargs: Any):
         super().__init__(**kwargs)
         if ops is None:
             ops = ["+"]

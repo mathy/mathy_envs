@@ -21,9 +21,7 @@ class PolyCommuteLikeTerms(PolySimplify):
     swap rule to reorder the expression bringing the like terms close together.
     """
 
-    def __init__(self, **kwargs):
-        super(PolyCommuteLikeTerms, self).__init__(**kwargs)
-        self.rule = DistributiveFactorOutRule()
+    rule = DistributiveFactorOutRule()
 
     def get_env_namespace(self) -> str:
         return "mathy.polynomials.commute.like.terms"
