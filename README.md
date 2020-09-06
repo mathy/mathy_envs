@@ -1,22 +1,45 @@
-<p align="center">
-<a href="https://github.com/mathy/mathy_envs/actions">
-    <img src="https://github.com/mathy/mathy_envs/workflows/Build/badge.svg" />
-</a>
-<a href="https://codecov.io/gh/mathy/mathy_envs">
-    <img src="https://codecov.io/gh/mathy/mathy_envs/branch/master/graph/badge.svg" />
-</a>
-<a href="https://pypi.org/project/mathy_envs" target="_blank">
-    <img src="https://badge.fury.io/py/mathy_envs.svg" alt="Package version">
-</a>
-</p>
+# mathy_envs: Learning environments for solving math problems
 
-## Website
+[![Build status](https://travis-ci.com/mathy/mathy_envs.svg?branch=master)](https://travis-ci.com/mathy/mathy_envs)
+[![codecov](https://codecov.io/gh/mathy/mathy_envs/branch/master/graph/badge.svg)](https://codecov.io/gh/mathy/mathy_envs)
+[![Pypi version](https://badgen.net/pypi/v/mathy-envs)](https://pypi.org/project/mathy-envs/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-Mathy's website has rich documentation with visualizations and examples that can be directly executed in Google Colab: <a href="https://mathy.ai" target="_blank">https://mathy.ai</a>
+Mathy environments present users/agents with a prompt problem, and are asked to simplify it according to some problem-specific criteria using combinations of simple actions based on the Properties of Numbers.
+
+## 🚀 Quickstart
+
+You can install `mathy_envs` from pip:
+
+```bash
+pip install mathy_envs
+```
+
+
+## Semantic Versioning
+
+Mathy Envs tries to be predictable when it comes to breaking changes, so the project uses semantic versioning to help users avoid breakage.
+
+Specifically, new releases increase the `patch` semver component for new features and fixes, and the `minor` component when there are breaking changes. If you don't know much about semver strings, they're usually formatted `{major}.{minor}.{patch}` so increasing the `patch` component means incrementing the last number.
+
+Consider a few examples:
+
+| From Version | To Version | Changes are Breaking |
+| :----------: | :--------: | :------------------: |
+|    0.2.0     |   0.2.1    |          No          |
+|    0.3.2     |   0.3.6    |          No          |
+|    0.3.1     |   0.3.17   |          No          |
+|    0.2.2     |   0.3.0    |         Yes          |
+
+If you are concerned about breaking changes, you can pin the version in your requirements so that it does not go beyond the current semver `minor` component, for example if the current version was `0.1.37`:
+
+```
+mathy_envs>=0.1.37,<0.2.0
+```
 
 ## Contributors
 
-Mathy wouldn't be possible without the wonderful contributions of the following people:
+Mathy Envs wouldn't be possible without the wonderful contributions of the following people:
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
