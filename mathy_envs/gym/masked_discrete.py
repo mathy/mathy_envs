@@ -15,7 +15,7 @@ class MaskedDiscrete(spaces.Discrete):
         assert isinstance(mask, (tuple, list))
         assert len(mask) == n
         self.mask = np.array(mask)
-        super(MaskedDiscrete, self).__init__(n)
+        super(MaskedDiscrete, self).__init__(n)  # type:ignore
 
     def sample(self) -> int:
         probability = self.mask / np.sum(self.mask)
