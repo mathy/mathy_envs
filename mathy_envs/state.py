@@ -282,6 +282,7 @@ class MathyEnvState(object):
         for node in nodes:
             vectors.append(node.type_id)
             if isinstance(node, ConstantExpression):
+                assert node.value is not None
                 values.append(float(node.value))
             else:
                 values.append(0.0)
