@@ -1,3 +1,10 @@
+## [0.8.4](https://github.com/mathy/mathy_envs/compare/v0.8.3...v0.8.4) (2020-09-13)
+
+
+### Features
+
+* **state:** add normalize param to_observation ([4045686](https://github.com/mathy/mathy_envs/commit/4045686fa8af571fc6b8869fb23cfa52a258f9c4))
+
 ## [0.8.3](https://github.com/mathy/mathy_envs/compare/v0.8.2...v0.8.3) (2020-09-13)
 
 
