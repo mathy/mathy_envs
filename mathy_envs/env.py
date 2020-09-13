@@ -3,6 +3,7 @@ from itertools import groupby
 from typing import Any, Dict, List, Optional, Tuple, Type
 
 import numpy as np
+from mathy_core import VisitStop
 from mathy_core.expressions import STOP, MathExpression
 from mathy_core.parser import ExpressionParser, InvalidSyntax
 from mathy_core.rule import BaseRule, ExpressionChangeRule
@@ -451,7 +452,9 @@ class MathyEnv:
         count = 0
         result = None
 
-        def visit_fn(node: MathExpression, depth: int, data: Any) -> Optional[str]:
+        def visit_fn(
+            node: MathExpression, depth: int, data: Any
+        ) -> Optional[VisitStop]:
             nonlocal result, count
             result = node
             if count == index:
@@ -471,12 +474,14 @@ class MathyEnv:
         for the given rule is valid.
         """
         agent = env_state.agent
+        expression: Optional[MathExpression] = None
         try:
             expression = self.parser.parse(agent.problem)
         except InvalidSyntax as err:
             raise_with_history(
                 self.get_env_namespace(), err.message, env_state.agent.history
             )
+        assert expression is not None
         return self.get_actions_for_node(expression)
 
     def get_valid_rules(self, env_state: MathyEnvState) -> List[int]:
