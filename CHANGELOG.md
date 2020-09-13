@@ -1,3 +1,10 @@
+## [0.8.3](https://github.com/mathy/mathy_envs/compare/v0.8.2...v0.8.3) (2020-09-13)
+
+
+### Features
+
+* **mathy_core:** update to 0.8.0 with full typings ([3c2e5ad](https://github.com/mathy/mathy_envs/commit/3c2e5adec624407d766ee2a3a409491cac51f98d))
+
 ## [0.8.2](https://github.com/mathy/mathy_envs/compare/v0.8.1...v0.8.2) (2020-09-06)
 
 
