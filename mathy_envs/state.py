@@ -266,6 +266,7 @@ class MathyEnvState(object):
         move_mask: Optional[NodeMaskIntList] = None,
         hash_type: Optional[ProblemTypeIntList] = None,
         parser: Optional[ExpressionParser] = None,
+        normalize: bool = True,
     ) -> MathyObservation:
         """Convert a state into an observation"""
         if parser is None:
@@ -286,6 +287,12 @@ class MathyEnvState(object):
                 values.append(float(node.value))
             else:
                 values.append(0.0)
+
+        # The "values" can be normalized 0-1
+        if normalize is True:
+            x = np.asfarray(values)
+            # https://bit.ly/3irAalH
+            values = ((x - min(x)) / (max(x) - min(x))).tolist()
 
         # Pass a 0-1 value indicating the relative episode time where 0.0 is
         # the episode start, and 1.0 is the episode end as indicated by the

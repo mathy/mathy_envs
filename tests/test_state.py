@@ -1,13 +1,24 @@
+import numpy as np
 from typing import List, Tuple
 
 from mathy_envs.envs.poly_simplify import PolySimplify
-from mathy_envs.state import MathyEnvState
+from mathy_envs.state import MathyEnvState, MathyObservation
 
 
 def test_state_to_observation():
     """to_observation has defaults to allow calling with no arguments"""
     env_state = MathyEnvState(problem="4x+2")
     assert env_state.to_observation() is not None
+
+
+def test_state_to_observation_normalization():
+    """to_observation has defaults to allow calling with no arguments"""
+    env_state = MathyEnvState(problem="4+2")
+    obs: MathyObservation = env_state.to_observation(normalize=False)
+    assert np.max(obs.values) == 4.0
+
+    norm: MathyObservation = env_state.to_observation(normalize=True)
+    assert np.max(norm.values) == 1.0
 
 
 def test_state_encodes_hierarchy():
