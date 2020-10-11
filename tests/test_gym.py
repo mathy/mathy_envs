@@ -33,13 +33,8 @@ def test_gym_instantiate_envs():
 
         obs = wrapper_env.reset()
         print("initial observation:", obs)
-
-        done = False
-        i = 0
-        while not done and i < 10:
-            i += 1
-            action = wrapper_env.action_space.sample()
-            wrapper_env.step(action)
+        action = wrapper_env.action_space.sample()
+        wrapper_env.step(action)
         observation: np.ndarray = wrapper_env.reset()
         assert isinstance(observation, (dict, np.ndarray, MathyObservation))
         assert observation is not None
