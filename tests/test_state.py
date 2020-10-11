@@ -1,5 +1,6 @@
-import numpy as np
 from typing import List, Tuple
+
+import numpy as np
 
 from mathy_envs.envs.poly_simplify import PolySimplify
 from mathy_envs.state import MathyEnvState, MathyObservation

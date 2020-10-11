@@ -1,13 +1,14 @@
 import sys
 
 import mock
+import numpy as np
 import pytest
 
+from mathy_envs.env import MathyEnv
 from mathy_envs.state import MathyObservation
 
 
 def test_gym_raises_helpful_error_if_gym_is_not_installed():
-
     with mock.patch.dict(sys.modules, {"gym": None}):
         with pytest.raises(ImportError, match=r"pip install mathy_envs\[gym\]"):
             import mathy_envs.gym  # noqa
@@ -29,6 +30,72 @@ def test_gym_instantiate_envs():
     for gym_env_spec in mathy_gym_envs:
         wrapper_env: MathyGymEnv = gym.make(gym_env_spec.id)  # type:ignore
         assert wrapper_env is not None
-        observation: MathyObservation = wrapper_env.reset()
-        assert isinstance(observation, MathyObservation)
+
+        obs = wrapper_env.reset()
+        print("initial observation:", obs)
+        action = wrapper_env.action_space.sample()
+        wrapper_env.step(action)
+        observation: np.ndarray = wrapper_env.reset()
+        assert isinstance(observation, (dict, np.ndarray, MathyObservation))
         assert observation is not None
+
+
+def test_gym_env_spaces():
+    import gym
+
+    from mathy_envs.gym import MaskedDiscrete, MathyGymEnv
+
+    wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0")  # type:ignore
+    mathy: MathyEnv = wrapper_env.mathy
+    observation: np.ndarray = wrapper_env.reset()
+
+    # Has a masked discrete (finite) action space
+    assert wrapper_env.action_space is not None
+    assert isinstance(wrapper_env.action_space, MaskedDiscrete)
+    # Action space is (num_rules * max_seq_len)
+    assert wrapper_env.action_size == int(len(mathy.rules) * mathy.max_seq_len)
+    assert wrapper_env.action_space.shape == tuple()
+
+    # Observation matches the space spec
+    assert wrapper_env.observation_space.shape == observation.shape
+
+
+def test_gym_goal_env_spaces():
+    import gym
+
+    from mathy_envs.gym import MaskedDiscrete, MathyGymGoalEnv
+
+    wrapper_env: MathyGymGoalEnv = gym.make("mathy-goal-poly-easy-v0")  # type:ignore
+    mathy: MathyEnv = wrapper_env.mathy
+    observation: np.ndarray = wrapper_env.reset()
+
+    # Has a masked discrete (finite) action space
+    assert wrapper_env.action_space is not None
+    assert isinstance(wrapper_env.action_space, MaskedDiscrete)
+    # Action space is (num_rules * max_seq_len)
+    assert wrapper_env.action_size == int(len(mathy.rules) * mathy.max_seq_len)
+    assert wrapper_env.action_space.shape == tuple()
+
+    # Observation matches the space spec
+    assert (
+        wrapper_env.observation_space["observation"].shape
+        == observation["observation"].shape
+    )
+
+
+def test_gym_pfrl():
+    import gym
+
+    env = gym.make("mathy-poly-easy-v0")
+    print("observation space:", env.observation_space)
+    print("action space:", env.action_space)
+
+    obs = env.reset()
+    print("initial observation:", obs)
+
+    done = False
+    while not done:
+        action = env.action_space.sample()
+        obs, r, done, info = env.step(action)
+        print("reward:", r)
+    print("done!")

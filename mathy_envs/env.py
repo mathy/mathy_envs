@@ -1,6 +1,6 @@
 import random
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 from mathy_core import VisitStop
@@ -20,7 +20,15 @@ from mathy_core.util import compare_expression_string_values, raise_with_history
 from . import time_step
 from .state import MathyEnvState, MathyEnvStateStep, MathyObservation
 from .time_step import is_terminal_transition
-from .types import ActionType, EnvRewards, MathyEnvProblem, MathyEnvProblemArgs
+from .types import ActionType, EnvRewards, Literal, MathyEnvProblem, MathyEnvProblemArgs
+
+InvalidActionResponses = Literal["raise", "penalize", "terminal"]
+
+INVALID_ACTION_RESPONSES: List[InvalidActionResponses] = [
+    "raise",
+    "penalize",
+    "terminal",
+]
 
 
 class MathyEnv:
@@ -30,24 +38,29 @@ class MathyEnv:
 
     rules: List[BaseRule]
     max_moves: int
+    max_seq_len: int
     verbose: bool
     reward_discount: float
     parser: ExpressionParser
     valid_actions_mask_cache: Dict[str, List[List[int]]]
     valid_rules_cache: Dict[str, List[int]]
+    invalid_action_response: InvalidActionResponses
 
     def __init__(
         self,
+        *,
         rules: List[BaseRule] = None,
         max_moves: int = 20,
         verbose: bool = False,
-        error_invalid: bool = True,
+        invalid_action_response: InvalidActionResponses = "raise",
         reward_discount: float = 0.99,
+        max_seq_len: int = 128,
     ):
         self.discount = reward_discount
         self.verbose = verbose
         self.max_moves = max_moves
-        self.error_invalid = error_invalid
+        self.max_seq_len = max_seq_len
+        self.invalid_action_response = invalid_action_response
         self.parser = ExpressionParser()
         if rules is None:
             self.rules = MathyEnv.core_rules()
@@ -55,6 +68,12 @@ class MathyEnv:
             self.rules = rules
         self.valid_actions_mask_cache = dict()
         self.valid_rules_cache = dict()
+
+        if self.invalid_action_response not in INVALID_ACTION_RESPONSES:
+            raise ValueError(
+                f"Unknown invalid action behavior: {self.invalid_action_response}\n"
+                f"Expected one of: {', '.join(INVALID_ACTION_RESPONSES)}"
+            )
 
     @classmethod
     def core_rules(cls, preferred_term_commute: bool = False) -> List[BaseRule]:
@@ -71,7 +90,7 @@ class MathyEnv:
     @property
     def action_size(self) -> int:
         """Return the number of available actions"""
-        return len(self.rules)
+        return len(self.rules) * self.max_seq_len
 
     def finalize_state(self, state: MathyEnvState) -> None:
         """Perform final checks on a problem state, to ensure the episode yielded
@@ -132,14 +151,15 @@ class MathyEnv:
         raise NotImplementedError("This must be implemented in a subclass")
 
     def state_to_observation(
-        self,
-        state: MathyEnvState,
+        self, state: MathyEnvState, max_seq_len: Optional[int] = None
     ) -> MathyObservation:
         """Convert an environment state into an observation that can be used
         by a training agent."""
 
         action_mask = self.get_valid_moves(state)
-        observation = state.to_observation(move_mask=action_mask, parser=self.parser)
+        observation = state.to_observation(
+            move_mask=action_mask, parser=self.parser, max_seq_len=max_seq_len
+        )
         return observation
 
     def get_win_signal(self, env_state: MathyEnvState) -> float:
@@ -238,7 +258,7 @@ class MathyEnv:
         )
 
     def get_next_state(
-        self, env_state: MathyEnvState, action: ActionType
+        self, env_state: MathyEnvState, action: Union[int, ActionType]
     ) -> Tuple[MathyEnvState, time_step.TimeStep, ExpressionChangeRule]:
         """
         # Parameters
@@ -252,8 +272,12 @@ class MathyEnv:
 
         change: the change descriptor describing the change that happened
         """
+        action = self.to_action(action)
         agent = env_state.agent
         expression = self.parser.parse(agent.problem)
+        assert isinstance(
+            action, tuple
+        ), f"Expected tuple action, but received: {type(action)} {action}"
         action_index, token_index = action
         token = self.get_token_at_index(expression, token_index)
         operation = self.rules[action_index]
@@ -261,20 +285,28 @@ class MathyEnv:
         op_not_rule = not isinstance(operation, BaseRule)
         op_cannot_apply = token is None or operation.can_apply_to(token) is False
         if token is None or op_not_rule or op_cannot_apply:
-            if self.error_invalid:
+            if self.invalid_action_response == "raise":
                 steps = int(env_state.max_moves - agent.moves_remaining)
                 msg = "Step: {} - Invalid action({}) '{}' for expression '{}'.".format(
                     steps, action, type(operation), expression
                 )
                 raise_with_history("Invalid Action", msg, agent.history)
-            else:
-                # Non-masked searches ignore invalid moves entirely
+            elif self.invalid_action_response == "penalize":
+                #
                 out_env = MathyEnvState.copy(env_state)
                 obs = out_env.to_observation(
                     self.get_valid_moves(out_env), parser=self.parser
                 )
                 transition = time_step.transition(obs, EnvRewards.INVALID_MOVE)
                 return out_env, transition, ExpressionChangeRule(BaseRule())
+            elif self.invalid_action_response == "terminal":
+                out_env = MathyEnvState.copy(env_state)
+                obs = out_env.to_observation(
+                    self.get_valid_moves(out_env), parser=self.parser
+                )
+                transition = time_step.termination(obs, self.get_lose_signal(env_state))
+                return out_env, transition, ExpressionChangeRule(BaseRule())
+
         assert token is not None
         change = operation.apply_to(token.clone_from_root())
         assert change.result is not None
@@ -515,7 +547,7 @@ class MathyEnv:
     ) -> List[List[int]]:
         """Return a valid actions mask for the given expression and rule list.
 
-        Action masks are 1d lists of length (nodes * num_rules) where a 0 indicates
+        Action masks are 2d lists of length (num_rules, max_seq_len) where a 0 indicates
         the action is not valid in the current state, and a 1 indicates that it is
         a valid action to take."""
         key = str(expression)
@@ -539,3 +571,14 @@ class MathyEnv:
     def to_hash_key(self, env_state: MathyEnvState) -> str:
         """Convert env_state to a string for MCTS cache"""
         return env_state.agent.problem
+
+    def to_action(self, action: Union[int, ActionType]) -> ActionType:
+        """Resolve a given action input to a tuple of (rule_index, node_index).
+
+        When given an int, it is treated as an index into the flattened 2d action
+        space. When given a tuple, it is assumed to be (rule, node)"""
+        if isinstance(action, tuple):
+            return action
+        token_index = action % self.max_seq_len
+        action_index = int((action - token_index) / self.max_seq_len)
+        return action_index, token_index

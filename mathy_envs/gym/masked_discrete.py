@@ -9,13 +9,15 @@ class MaskedDiscrete(spaces.Discrete):
     Example::
         >>> MaskedDiscrete(3, mask=(1,1,0))
     """
-    mask: np.array
+
+    def update_mask(self, mask: Union[List[int], Tuple[int, ...]]) -> None:
+        assert isinstance(mask, (tuple, list, np.ndarray))
+        assert len(mask) == self.n
+        self.mask = np.array(mask)
 
     def __init__(self, n: int, mask: Union[List[int], Tuple[int, ...]]):
-        assert isinstance(mask, (tuple, list))
-        assert len(mask) == n
-        self.mask = np.array(mask)
         super(MaskedDiscrete, self).__init__(n)  # type:ignore
+        self.update_mask(mask)
 
     def sample(self) -> int:
         probability = self.mask / np.sum(self.mask)

@@ -267,6 +267,7 @@ class MathyEnvState(object):
         hash_type: Optional[ProblemTypeIntList] = None,
         parser: Optional[ExpressionParser] = None,
         normalize: bool = True,
+        max_seq_len: Optional[int] = None,
     ) -> MathyObservation:
         """Convert a state into an observation"""
         if parser is None:
@@ -288,17 +289,29 @@ class MathyEnvState(object):
             else:
                 values.append(0.0)
 
-        # The "values" can be normalized 0-1
+        # The "types" and "values" can be normalized 0-1
         if normalize is True:
-            x = np.asfarray(values)
             # https://bit.ly/3irAalH
-            values = ((x - min(x)) / (max(x) - min(x))).tolist()
+            x = np.asfarray(values)
+            if x.sum() > 0.0:
+                x = (x - min(x)) / (max(x) - min(x))
+            values = x.tolist()
+            x = np.asfarray(vectors)
+            if x.sum() > 0.0:
+                x = (x - min(x)) / (max(x) - min(x))
+            vectors = x.tolist()
 
         # Pass a 0-1 value indicating the relative episode time where 0.0 is
         # the episode start, and 1.0 is the episode end as indicated by the
         # maximum allowed number of actions.
         step = int(self.max_moves - self.agent.moves_remaining)
         time = int(step / self.max_moves * 10)
+
+        # Pad observations to max_seq_len if specified
+        if max_seq_len is not None:
+            values = pad_array(values, max_seq_len, 0.0)
+            vectors = pad_array(vectors, max_seq_len, 0.0)
+            move_mask = [pad_array(m, max_seq_len, 0) for m in move_mask]
 
         return MathyObservation(
             nodes=vectors, mask=move_mask, values=values, type=hash_type, time=[time]
@@ -309,6 +322,8 @@ class MathyEnvState(object):
         """Convert a string representation of state into a state object"""
         sep = "@"
         history_sep = ","
+        # remove any padding from string inputs (if added by to_np call)
+        input_string = input_string.rstrip()
         inputs = input_string.split(sep)
         state = MathyEnvState()
         state.max_moves = int(inputs[0])
@@ -328,7 +343,9 @@ class MathyEnvState(object):
             )
         return state
 
-    def to_string(self) -> str:
+    def to_string(
+        self,
+    ) -> str:
         """Convert a state object into a string representation"""
         sep = "@"
         assert self.agent is not None, "invalid state"
@@ -353,6 +370,11 @@ class MathyEnvState(object):
         state = cls.from_string(input_string)
         return state
 
-    def to_np(self) -> np.ndarray:
+    def to_np(self, pad_to: int = None) -> np.ndarray:
         """Convert a state object into a numpy representation"""
-        return np.array([ord(c) for c in self.to_string()])
+        string = self.to_string()
+        if pad_to is not None:
+            assert pad_to >= len(string), "input is larger than pad size!"
+            to_pad = pad_to - len(string)
+            string += " " * to_pad
+        return np.array([ord(c) for c in string])

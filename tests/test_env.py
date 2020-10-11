@@ -1,8 +1,9 @@
 import random
+from typing import Any
 
 import pytest
 
-from mathy_envs.env import MathyEnv
+from mathy_envs.env import INVALID_ACTION_RESPONSES, MathyEnv
 from mathy_envs.envs.poly_simplify import PolySimplify
 from mathy_envs.state import MathyEnvState
 from mathy_envs.time_step import is_terminal_transition
@@ -19,9 +20,17 @@ def test_env_init():
         env.get_env_namespace()
 
 
+def test_env_init_check_invalid_action_response():
+    with pytest.raises(ValueError):
+        MathyEnv(invalid_action_response="something_wrong")  # type:ignore
+    option: Any
+    for option in INVALID_ACTION_RESPONSES:
+        assert MathyEnv(invalid_action_response=option) is not None
+
+
 def test_env_action_masks():
     problem = "4x + 2x"
-    env = MathyEnv(error_invalid=True)
+    env = MathyEnv(invalid_action_response="raise")
     env_state = MathyEnvState(problem=problem, max_moves=35)
     valid_mask = env.get_valid_moves(env_state)
     assert len(valid_mask) == len(env.rules)
@@ -31,7 +40,7 @@ def test_env_action_masks():
 def test_env_invalid_action_behaviors():
 
     problem = "4x + 2x"
-    env = MathyEnv(error_invalid=True)
+    env = MathyEnv(invalid_action_response="raise")
     env_state = MathyEnvState(problem=problem, max_moves=35)
     rule_actions = env.get_valid_moves(env_state)
     rule_indices = [i for i, value in enumerate(rule_actions) if 1 not in value]
@@ -39,14 +48,25 @@ def test_env_invalid_action_behaviors():
     rule_nodes = rule_actions[rule_indices[0]]
     node_indices = [i for i, value in enumerate(rule_nodes) if value == 0]
     action = (rule_indices[0], node_indices[0])
-    # error_invalid throws if an invalid action is selected
+
+    # Raise an error when selecting an invalid action
+    env_state = MathyEnvState(problem=problem, max_moves=35)
     with pytest.raises(ValueError):
         env.get_next_state(env_state, action)
 
-    env = MathyEnv(error_invalid=False)
-    env_state, transition, changed = env.get_next_state(env_state, action)
-    # a transition is returned with error_invalid=False
+    # Penalize the agent for choosing an invalid action
+    env = MathyEnv(invalid_action_response="penalize")
+    env_state = MathyEnvState(problem=problem, max_moves=35)
+    _, transition, _ = env.get_next_state(env_state, action)
     assert transition.reward == EnvRewards.INVALID_MOVE
+    assert is_terminal_transition(transition) is False
+
+    # End the episode when choosing an invalid action
+    env = MathyEnv(invalid_action_response="terminal")
+    env_state = MathyEnvState(problem=problem, max_moves=35)
+    _, transition, _ = env.get_next_state(env_state, action)
+    # a transition is returned with error_invalid=False
+    assert is_terminal_transition(transition) is True
 
 
 def test_env_terminal_conditions():
@@ -119,7 +139,24 @@ def test_env_finalize_state():
         env.finalize_state(env_state)
 
 
-def test_mathy_env_jd():
+def test_mathy_env_can_timestep_loop():
+    env = MathyEnv()
+    assert env is not None
+    problem = "5y * 9x + 8z + 8x + 3z * 10y * 11x + 10y"
+    env_state = MathyEnvState(problem=problem, max_moves=35)
+    for i in range(3):
+        rule_actions = env.get_valid_moves(env_state)
+        rule_indices = [i for i, value in enumerate(rule_actions) if 1 in value]
+        random.shuffle(rule_indices)
+        rule_nodes = rule_actions[rule_indices[0]]
+        node_indices = [i for i, value in enumerate(rule_nodes) if value == 1]
+        env_state, value, changed = env.get_next_state(
+            env_state, (rule_indices[0], node_indices[0])
+        )
+    assert env_state.to_observation([]) is not None
+
+
+def test_mathy_env_invalid_action_behaviors():
     env = MathyEnv()
     assert env is not None
     problem = "5y * 9x + 8z + 8x + 3z * 10y * 11x + 10y"
