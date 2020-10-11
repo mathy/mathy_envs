@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type, Union
+from typing import Any, List, Optional, Type, Union
 
 import gym
 import numpy as np
@@ -13,9 +13,26 @@ from ..types import ActionType, MathyEnvProblemArgs
 from .masked_discrete import MaskedDiscrete
 
 
-class MathyGymEnv(gym.Env):
-    """A small wrapper around Mathy envs to allow them to work with OpenAI Gym. The
-    agents currently use this env wrapper, but it could be dropped in the future."""
+class MathyGoals:
+    """Multi-goal environment goal identifiers. Used to represent
+    various goals as an input to the model and for goal-substitution
+    using HER."""
+
+    ENV_GOAL = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    SIMPLIFY_GOAL = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    EXPAND_GOAL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    INVALID_MOVE_GOAL = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    @staticmethod
+    def same(
+        check: Union[np.ndarray, List[int]], against: Union[np.ndarray, List[int]]
+    ) -> bool:
+        return (np.array(check) == np.array(against)).all()
+
+
+class MathyGymGoalEnv(gym.GoalEnv):
+    """A small wrapper around Mathy envs to allow them to work with OpenAI
+    gym.Goal envs."""
 
     mathy: MathyEnv
     state: Optional[MathyEnvState]
@@ -47,28 +64,21 @@ class MathyGymEnv(gym.Env):
             self._challenge, _ = self.mathy.get_initial_state(env_problem_args)
 
         self.action_space = MaskedDiscrete(self.action_size, [1] * self.action_size)
-        if np_observation is True:
-            mask = len(self.mathy.rules) * self.mathy.max_seq_len
-            values = self.mathy.max_seq_len
-            nodes = self.mathy.max_seq_len
-            type = 2
-            time = 1
-            obs_size = mask + values + nodes + type + time
-            self.observation_space = spaces.Box(
-                low=0, high=1, shape=(obs_size,), dtype="float32"
+        mask = len(self.mathy.rules) * self.mathy.max_seq_len
+        values = self.mathy.max_seq_len
+        nodes = self.mathy.max_seq_len
+        type = 2
+        time = 1
+        obs_size = mask + values + nodes + type + time
+        self.observation_space = spaces.Dict(
+            dict(
+                desired_goal=spaces.MultiBinary(16),
+                achieved_goal=spaces.MultiBinary(16),
+                observation=spaces.Box(
+                    low=0, high=1, shape=(obs_size,), dtype="float32"
+                ),
             )
-        else:
-            # TODO: How to express a structured observation space in gym? e.g.
-            #
-            # obs = (
-            #      nodes_tensor(1, 128),
-            #      values_tensor(1, 128),
-            #      type_tensor(1, 2),
-            #      time_tensor(1, 1)
-            # )
-            raise NotImplementedError(
-                "not sure how to represent the mathy obs space in gym"
-            )
+        )
 
     @property
     def action_size(self) -> int:
@@ -89,7 +99,7 @@ class MathyGymEnv(gym.Env):
             info["win"] = transition.reward > 0.0
         return self._observe(self.state), transition.reward, done, info
 
-    def _observe(self, state: MathyEnvState) -> Union[MathyObservation, np.ndarray]:
+    def _observe(self, state: MathyEnvState) -> dict:
         """Observe the environment at the given state, updating the observation
         space and action space for the given state."""
         action_mask = self.mathy.get_valid_moves(state)
@@ -98,14 +108,28 @@ class MathyGymEnv(gym.Env):
         )
         flat_mask = np.array(action_mask).reshape(-1)
         self.action_space.update_mask(flat_mask)
-        if self.np_observation:
-            nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
-            values = np.array(observation.values, dtype="float32").reshape(-1)
-            mask = np.array(action_mask, dtype="float32").reshape(-1)
-            return np.concatenate(
-                [observation.type, observation.time, nodes, values, mask], axis=-1
-            )
-        return observation
+        nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
+        values = np.array(observation.values, dtype="float32").reshape(-1)
+        mask = np.array(action_mask, dtype="float32").reshape(-1)
+        np_observation = np.concatenate(
+            [observation.type, observation.time, nodes, values, mask], axis=-1
+        )
+
+        # Determine the achieved expand/simplify goal
+        curr_text = state.agent.problem
+        last_text = state.agent.history[-1].raw
+        achieved = (
+            MathyGoals.EXPAND_GOAL
+            if len(curr_text) > len(last_text)
+            else MathyGoals.SIMPLIFY_GOAL
+        )
+
+        output = {
+            "observation": np_observation,
+            "desired_goal": np.array(MathyGoals.ENV_GOAL),
+            "achieved_goal": np.array(achieved),
+        }
+        return output
 
     def reset(self) -> Union[MathyObservation, np.ndarray]:
         if self.state is not None:
@@ -151,11 +175,3 @@ class MathyGymEnv(gym.Env):
             change=last_change,
             change_reward=last_reward,
         )
-
-
-def safe_register(id: str, **kwargs: Any) -> None:
-    """Ignore re-register errors."""
-    try:
-        register(id, **kwargs)
-    except gym.error.Error:
-        pass
