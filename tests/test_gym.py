@@ -1,4 +1,3 @@
-from mathy_envs.state import MathyObservation
 import sys
 
 import mock
@@ -6,6 +5,7 @@ import numpy as np
 import pytest
 
 from mathy_envs.env import MathyEnv
+from mathy_envs.state import MathyObservation
 
 
 def test_gym_raises_helpful_error_if_gym_is_not_installed():
@@ -43,7 +43,7 @@ def test_gym_instantiate_envs():
 def test_gym_env_spaces():
     import gym
 
-    from mathy_envs.gym import MathyGymEnv, MaskedDiscrete
+    from mathy_envs.gym import MaskedDiscrete, MathyGymEnv
 
     wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0")  # type:ignore
     mathy: MathyEnv = wrapper_env.mathy
@@ -63,7 +63,7 @@ def test_gym_env_spaces():
 def test_gym_goal_env_spaces():
     import gym
 
-    from mathy_envs.gym import MathyGymGoalEnv, MaskedDiscrete
+    from mathy_envs.gym import MaskedDiscrete, MathyGymGoalEnv
 
     wrapper_env: MathyGymGoalEnv = gym.make("mathy-goal-poly-easy-v0")  # type:ignore
     mathy: MathyEnv = wrapper_env.mathy

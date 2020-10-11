@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Type, Union
 import gym
 import numpy as np
 from gym import spaces
-from gym.envs.registration import register
 from mathy_core.rule import ExpressionChangeRule
 
 from ..env import MathyEnv

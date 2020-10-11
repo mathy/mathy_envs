@@ -10,7 +10,7 @@ class MaskedDiscrete(spaces.Discrete):
         >>> MaskedDiscrete(3, mask=(1,1,0))
     """
 
-    def update_mask(self, mask: Union[List[int], Tuple[int, ...]]):
+    def update_mask(self, mask: Union[List[int], Tuple[int, ...]]) -> None:
         assert isinstance(mask, (tuple, list, np.ndarray))
         assert len(mask) == self.n
         self.mask = np.array(mask)

@@ -579,9 +579,6 @@ class MathyEnv:
         space. When given a tuple, it is assumed to be (rule, node)"""
         if isinstance(action, tuple):
             return action
-        rule_count = len(self.rules)
-        # Rule index = val % rule_count
         token_index = action % self.max_seq_len
-        # And the action at that token
         action_index = int((action - token_index) / self.max_seq_len)
         return action_index, token_index
