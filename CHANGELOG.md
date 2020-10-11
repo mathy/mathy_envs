@@ -1,3 +1,11 @@
+# [0.9.0](https://github.com/mathy/mathy_envs/compare/v0.8.4...v0.9.0) (2020-10-11)
+
+
+### Features
+
+* **env:** add invalid_action_response options ([f120261](https://github.com/mathy/mathy_envs/commit/f120261c8a1f57584085f3b3dacafa2903678e17))
+* **gym:** add gym.GoalEnv variants for all mathy envs ([4841b37](https://github.com/mathy/mathy_envs/commit/4841b37abba060539ffb63d134b483054980ae49))
+
 ## [0.8.4](https://github.com/mathy/mathy_envs/compare/v0.8.3...v0.8.4) (2020-09-13)
 
 
