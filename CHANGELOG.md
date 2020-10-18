@@ -1,3 +1,10 @@
+## [0.9.1](https://github.com/mathy/mathy_envs/compare/v0.9.0...v0.9.1) (2020-10-18)
+
+
+### Features
+
+* **MathyGymEnv:** add mask_as_probabilities flag ([07fffd6](https://github.com/mathy/mathy_envs/commit/07fffd6bc810c6ad6cb7adacd2a97246e9e059cc))
+
 # [0.9.0](https://github.com/mathy/mathy_envs/compare/v0.8.4...v0.9.0) (2020-10-11)
 
 
