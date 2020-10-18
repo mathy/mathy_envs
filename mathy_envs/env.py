@@ -276,7 +276,7 @@ class MathyEnv:
         agent = env_state.agent
         expression = self.parser.parse(agent.problem)
         assert isinstance(
-            action, tuple
+            action, (tuple, list)
         ), f"Expected tuple action, but received: {type(action)} {action}"
         action_index, token_index = action
         token = self.get_token_at_index(expression, token_index)
@@ -363,8 +363,7 @@ class MathyEnv:
         history: List[MathyEnvStateStep] = env_state.agent.history[:]
         initial_step: MathyEnvStateStep = history.pop(0)
         curr_state: MathyEnvState = MathyEnvState(
-            problem=initial_step.raw,
-            max_moves=env_state.max_moves,
+            problem=initial_step.raw, max_moves=env_state.max_moves,
         )
         self.print_state(curr_state, "initial-state", pretty=pretty)
         while len(history) > 0:
@@ -423,32 +422,33 @@ class MathyEnv:
         return f"{num_moves} | {moves} | {moves_left} | {reward} | {output}"
 
     def random_action(
-        self,
-        expression: MathExpression,
-        rule: Type[BaseRule] = None,
-    ) -> int:
+        self, expression: MathExpression, rule: Type[BaseRule] = None,
+    ) -> Tuple[int, int]:
         """Get a random action index that represents a particular rule"""
 
         if rule is not None:
-            found = False
-            for r in self.rules:
+            found = -1
+            for rule_idx, r in enumerate(self.rules):
                 if isinstance(r, rule):  # type:ignore
-                    found = True
+                    found = rule_idx
                     break
-            if found is False:
+            if found == -1:
                 raise ValueError(
                     "The action {rule} does not exist in the environment rule list"
                 )
-            actions = np.nonzero(self.get_actions_for_node(expression, [rule]))
-            action = random.choice(actions[0])
-            return action
+            all_actions = self.get_actions_for_node(expression, [rule])
+            valid_actions = np.nonzero(all_actions[found])
+            action = random.choice(valid_actions[0])
+            return [found, int(action)]
 
         actions = np.nonzero(self.get_actions_for_node(expression))
+        valid_rules = [i for i, r in enumerate(actions) if 1 in r]
+        chosen_rule = random.choice(valid_rules)
         try:
-            action = random.choice(random.choice(actions))
+            action = random.choice(np.nonzero(actions[chose_rule]))
         except ValueError:
             raise ValueError(f"no valid actions for expression: {expression}")
-        return action
+        return [chosen_rule, action]
 
     def get_initial_state(
         self, params: Optional[MathyEnvProblemArgs] = None, print_problem: bool = True
@@ -541,9 +541,7 @@ class MathyEnv:
         return self.rules[time_step.action[0]]
 
     def get_actions_for_node(
-        self,
-        expression: MathExpression,
-        rule_list: List[Type[BaseRule]] = None,
+        self, expression: MathExpression, rule_list: List[Type[BaseRule]] = None,
     ) -> List[List[int]]:
         """Return a valid actions mask for the given expression and rule list.
 
@@ -577,7 +575,7 @@ class MathyEnv:
 
         When given an int, it is treated as an index into the flattened 2d action
         space. When given a tuple, it is assumed to be (rule, node)"""
-        if isinstance(action, tuple):
+        if isinstance(action, (tuple, list)):
             return action
         token_index = action % self.max_seq_len
         action_index = int((action - token_index) / self.max_seq_len)
