@@ -276,7 +276,7 @@ class MathyEnv:
         agent = env_state.agent
         expression = self.parser.parse(agent.problem)
         assert isinstance(
-            action, tuple
+            action, (tuple, list)
         ), f"Expected tuple action, but received: {type(action)} {action}"
         action_index, token_index = action
         token = self.get_token_at_index(expression, token_index)
@@ -426,29 +426,32 @@ class MathyEnv:
         self,
         expression: MathExpression,
         rule: Type[BaseRule] = None,
-    ) -> int:
+    ) -> Tuple[int, int]:
         """Get a random action index that represents a particular rule"""
 
         if rule is not None:
-            found = False
-            for r in self.rules:
+            found = -1
+            for rule_idx, r in enumerate(self.rules):
                 if isinstance(r, rule):  # type:ignore
-                    found = True
+                    found = rule_idx
                     break
-            if found is False:
+            if found == -1:
                 raise ValueError(
                     "The action {rule} does not exist in the environment rule list"
                 )
-            actions = np.nonzero(self.get_actions_for_node(expression, [rule]))
-            action = random.choice(actions[0])
-            return action
+            all_actions = self.get_actions_for_node(expression, [rule])
+            valid_actions = np.nonzero(all_actions[found])
+            action = random.choice(valid_actions[0])
+            return (found, int(action))
 
-        actions = np.nonzero(self.get_actions_for_node(expression))
-        try:
-            action = random.choice(random.choice(actions))
-        except ValueError:
+        all_actions = self.get_actions_for_node(expression)
+        valid_rules = [i for i, r in enumerate(all_actions) if 1 in r]
+        if len(valid_rules) == 0:
             raise ValueError(f"no valid actions for expression: {expression}")
-        return action
+        chosen_rule = random.choice(valid_rules)
+        valid_actions = [i for i, r in enumerate(all_actions[chosen_rule]) if r == 1]
+        action = random.choice(valid_actions)
+        return chosen_rule, action
 
     def get_initial_state(
         self, params: Optional[MathyEnvProblemArgs] = None, print_problem: bool = True
@@ -577,7 +580,7 @@ class MathyEnv:
 
         When given an int, it is treated as an index into the flattened 2d action
         space. When given a tuple, it is assumed to be (rule, node)"""
-        if isinstance(action, tuple):
+        if isinstance(action, (tuple, list)):
             return action
         token_index = action % self.max_seq_len
         action_index = int((action - token_index) / self.max_seq_len)
