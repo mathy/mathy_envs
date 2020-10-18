@@ -83,19 +83,24 @@ def test_gym_goal_env_spaces():
     )
 
 
-def test_gym_pfrl():
+def test_gym_probability_action_mask():
     import gym
 
-    env = gym.make("mathy-poly-easy-v0")
-    print("observation space:", env.observation_space)
-    print("action space:", env.action_space)
+    from mathy_envs.gym import MathyGymEnv
 
+    env: MathyGymEnv = gym.make(
+        "mathy-poly-easy-v0", mask_as_probabilities=True
+    )  # type:ignore
     obs = env.reset()
-    print("initial observation:", obs)
+    offset = -env.mathy.action_size
+    action_mask = obs[offset:]
+    # When returned as probabilities, the mask sums to 1.0
+    assert np.sum(action_mask) == 1.0
 
-    done = False
-    while not done:
-        action = env.action_space.sample()
-        obs, r, done, info = env.step(action)
-        print("reward:", r)
-    print("done!")
+    env: MathyGymEnv = gym.make(
+        "mathy-poly-easy-v0", mask_as_probabilities=False
+    )  # type:ignore
+    obs = env.reset()
+    # When not as probabilities, the mask is a bunch of 1s and 0s
+    action_mask = obs[offset:]
+    assert np.sum(action_mask) > 1

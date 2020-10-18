@@ -22,6 +22,7 @@ class MathyGymEnv(gym.Env):
     _challenge: Optional[MathyEnvState]
     env_class: Type[MathyEnv]
     env_problem_args: Optional[MathyEnvProblemArgs]
+    mask_as_probabilities: bool
 
     def __init__(
         self,
@@ -30,10 +31,12 @@ class MathyGymEnv(gym.Env):
         env_problem: Optional[str] = None,
         env_max_moves: int = 64,
         np_observation: bool = True,
+        mask_as_probabilities: bool = False,
         repeat_problem: bool = False,
         **env_kwargs: Any,
     ):
         self.state = None
+        self.mask_as_probabilities = mask_as_probabilities
         self.repeat_problem = repeat_problem
         self.np_observation = np_observation
         self.mathy = env_class(**env_kwargs)
@@ -98,13 +101,17 @@ class MathyGymEnv(gym.Env):
         )
         flat_mask = np.array(action_mask).reshape(-1)
         self.action_space.update_mask(flat_mask)
+        if self.mask_as_probabilities:
+            mask_sum = np.sum(flat_mask)
+            if mask_sum > 0.0:
+                flat_mask = flat_mask / mask_sum
         if self.np_observation:
             nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
             values = np.array(observation.values, dtype="float32").reshape(-1)
-            mask = np.array(action_mask, dtype="float32").reshape(-1)
-            return np.concatenate(
-                [observation.type, observation.time, nodes, values, mask], axis=-1
+            np_observation = np.concatenate(
+                [observation.type, observation.time, nodes, values, flat_mask], axis=-1
             )
+            return np_observation
         return observation
 
     def reset(self) -> Union[MathyObservation, np.ndarray]:
