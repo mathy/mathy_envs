@@ -1,3 +1,10 @@
+## [0.9.2](https://github.com/mathy/mathy_envs/compare/v0.9.1...v0.9.2) (2020-10-18)
+
+
+### Bug Fixes
+
+* **MathyEnv:** random_action did not return an action tuple ([09e2db5](https://github.com/mathy/mathy_envs/commit/09e2db58a52f9ee84ff9abbd10bf6cbae11412c5))
+
 ## [0.9.1](https://github.com/mathy/mathy_envs/compare/v0.9.0...v0.9.1) (2020-10-18)
 
 
