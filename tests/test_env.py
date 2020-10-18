@@ -2,10 +2,11 @@ import random
 from typing import Any
 
 import pytest
+from mathy_core.rules import AssociativeSwapRule
 
-from mathy_envs.env import INVALID_ACTION_RESPONSES, MathyEnv
+from mathy_envs import MathyEnv, MathyEnvState
+from mathy_envs.env import INVALID_ACTION_RESPONSES
 from mathy_envs.envs.poly_simplify import PolySimplify
-from mathy_envs.state import MathyEnvState
 from mathy_envs.time_step import is_terminal_transition
 from mathy_envs.types import EnvRewards
 
@@ -35,6 +36,21 @@ def test_env_action_masks():
     valid_mask = env.get_valid_moves(env_state)
     assert len(valid_mask) == len(env.rules)
     assert len(valid_mask[0]) == len(env.parser.parse(problem).to_list())
+
+
+def test_env_random_actions():
+    env = MathyEnv(invalid_action_response="raise")
+    state = MathyEnvState(problem="4x + 2x + 7 + y")
+    expression = env.parser.parse(state.agent.problem)
+    # Can select random actions of the given type
+    action = env.random_action(expression, AssociativeSwapRule)
+    env.get_next_state(state, action)
+
+    # Can select random actions from all types
+    state = MathyEnvState(problem="4x + 2x + 7 + y")
+    expression = env.parser.parse(state.agent.problem)
+    action = env.random_action(expression)
+    env.get_next_state(state, action)
 
 
 def test_env_invalid_action_behaviors():
