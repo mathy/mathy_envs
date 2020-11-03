@@ -46,6 +46,7 @@ class MathyEnv:
     valid_rules_cache: Dict[str, List[int]]
     invalid_action_response: InvalidActionResponses
     previous_state_penalty: bool
+    preferred_term_commute: bool
 
     def __init__(
         self,
@@ -57,6 +58,7 @@ class MathyEnv:
         reward_discount: float = 0.99,
         max_seq_len: int = 128,
         previous_state_penalty: bool = True,
+        preferred_term_commute: bool = False,
     ):
         self.discount = reward_discount
         self.previous_state_penalty = previous_state_penalty
@@ -66,7 +68,9 @@ class MathyEnv:
         self.invalid_action_response = invalid_action_response
         self.parser = ExpressionParser()
         if rules is None:
-            self.rules = MathyEnv.core_rules()
+            self.rules = MathyEnv.core_rules(
+                preferred_term_commute=preferred_term_commute
+            )
         else:
             self.rules = rules
         self.valid_actions_mask_cache = dict()

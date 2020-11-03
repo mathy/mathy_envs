@@ -189,6 +189,21 @@ def test_mathy_env_invalid_action_behaviors():
     assert env_state.to_observation([]) is not None
 
 
+def test_mathy_env_preferred_term_commute():
+    rule_idx = 1
+    problem = "5y"
+    env_state = MathyEnvState(problem=problem, max_moves=1)
+
+    env = MathyEnv(preferred_term_commute=False)
+    assert isinstance(env.rules[rule_idx], CommutativeSwapRule), "update rule_idx"
+    commute_nodes = env.get_valid_moves(env_state)[rule_idx]
+    assert 1 not in commute_nodes, "shouldn't be able to commute preferred order terms"
+
+    env = MathyEnv(preferred_term_commute=True)
+    commute_nodes = env.get_valid_moves(env_state)[rule_idx]
+    assert 1 in commute_nodes, "should be able to commute preferred order terms"
+
+
 def test_mathy_env_previous_state_penalty():
     """When previous_state_penalty=True, a negative reward is given when
     revisiting already seen problem states. If an agent revisits the
