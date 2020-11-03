@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 import pytest
-from mathy_core.rules import AssociativeSwapRule
+from mathy_core.rules import AssociativeSwapRule, CommutativeSwapRule
 
 from mathy_envs import MathyEnv, MathyEnvState
 from mathy_envs.env import INVALID_ACTION_RESPONSES
@@ -187,6 +187,49 @@ def test_mathy_env_invalid_action_behaviors():
             env_state, (rule_indices[0], node_indices[0])
         )
     assert env_state.to_observation([]) is not None
+
+
+def test_mathy_env_previous_state_penalty():
+    """When previous_state_penalty=True, a negative reward is given when
+    revisiting already seen problem states. If an agent revisits the
+    state too many times, the game ends."""
+
+    # We define the input problem with 3 nodes for simplicity
+    # "x * y" == ["x","*","y"]
+    # Because the tree is small and balanced, we can commute the
+    # same node over and over to flip back-and-forth between x * y
+    # and y * x.
+    problem = "x * y"
+    env = MathyEnv(previous_state_penalty=True)
+    rule_idx = 1
+    node_idx = 1
+    assert isinstance(env.rules[rule_idx], CommutativeSwapRule), "update rule_idx"
+    action = (rule_idx, node_idx)
+    env_state = MathyEnvState(problem=problem, max_moves=10)
+    # Commute the first time so we are revisit the initial state
+    # as we apply the same action again.
+    env_state, _, _ = env.get_next_state(env_state, action)
+
+    # After three visits to the same state, the game ends.
+    last_penalty = 0.0
+    found_terminal = False
+    for i in range(3):
+        env_state, transition, changed = env.get_next_state(env_state, action)
+        assert transition.reward < 0.0
+        # The penalty scales up based on the number of visits to the state
+        assert transition.reward < last_penalty
+        last_penalty = transition.reward
+
+        if i < 2:
+            # Visit the opposite state and ignore it (we only care about revisiting
+            # the initial state)
+            env_state, _, _ = env.get_next_state(env_state, action)
+        else:
+            # After the third time, we should receive a terminal transition
+            assert is_terminal_transition(transition) is True
+            found_terminal = True
+
+    assert found_terminal is True, "did not receive expected terminal transition"
 
 
 def test_mathy_env_win_conditions():
