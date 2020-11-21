@@ -15,6 +15,7 @@ from mathy_core.rules import (
     DistributiveMultiplyRule,
     VariableMultiplyRule,
 )
+from mathy_core.tree import BinaryTreeNode
 from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
@@ -232,7 +233,7 @@ class MathyEnv:
                         features, self.get_lose_signal(env_state)
                     )
 
-                # NOTE: the reward is scaled by how many times this state has been visited
+                # NOTE: the reward is scaled by # of times this state has been visited
                 return time_step.transition(
                     features,
                     reward=EnvRewards.PREVIOUS_LOCATION * list_count,
@@ -495,13 +496,13 @@ class MathyEnv:
     ) -> Optional[MathExpression]:
         """Get the token that is `index` from the left of the expression"""
         count = 0
-        result = None
+        result: Optional[MathExpression] = None
 
         def visit_fn(
-            node: MathExpression, depth: int, data: Any
+            node: BinaryTreeNode, depth: int, data: Any
         ) -> Optional[VisitStop]:
             nonlocal result, count
-            result = node
+            result = node  # type:ignore
             if count == index:
                 return STOP
             count = count + 1
