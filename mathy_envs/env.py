@@ -15,6 +15,7 @@ from mathy_core.rules import (
     DistributiveMultiplyRule,
     VariableMultiplyRule,
 )
+from mathy_core.tree import BinaryTreeNode
 from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
@@ -45,6 +46,8 @@ class MathyEnv:
     valid_actions_mask_cache: Dict[str, List[List[int]]]
     valid_rules_cache: Dict[str, List[int]]
     invalid_action_response: InvalidActionResponses
+    previous_state_penalty: bool
+    preferred_term_commute: bool
 
     def __init__(
         self,
@@ -55,15 +58,20 @@ class MathyEnv:
         invalid_action_response: InvalidActionResponses = "raise",
         reward_discount: float = 0.99,
         max_seq_len: int = 128,
+        previous_state_penalty: bool = True,
+        preferred_term_commute: bool = False,
     ):
         self.discount = reward_discount
+        self.previous_state_penalty = previous_state_penalty
         self.verbose = verbose
         self.max_moves = max_moves
         self.max_seq_len = max_seq_len
         self.invalid_action_response = invalid_action_response
         self.parser = ExpressionParser()
         if rules is None:
-            self.rules = MathyEnv.core_rules()
+            self.rules = MathyEnv.core_rules(
+                preferred_term_commute=preferred_term_commute
+            )
         else:
             self.rules = rules
         self.valid_actions_mask_cache = dict()
@@ -211,23 +219,26 @@ class MathyEnv:
             return time_step.termination(features, self.get_lose_signal(env_state))
 
         # The agent is penalized for returning to a previous state.
-        for key, group in groupby(
-            sorted([f"{h.raw}" for h in env_state.agent.history])
-        ):
-            list_count = len(list(group))
-            if list_count <= 1 or key != expression.raw:
-                continue
+        if self.previous_state_penalty is True:
+            for key, group in groupby(
+                sorted([f"{h.raw}" for h in env_state.agent.history])
+            ):
+                list_count = len(list(group))
+                if list_count <= 1 or key != expression.raw:
+                    continue
 
-            # After more than (n) visits to the same state, you lose.
-            if list_count > 3:
-                return time_step.termination(features, self.get_lose_signal(env_state))
+                # After more than (n) visits to the same state, you lose.
+                if list_count > 3:
+                    return time_step.termination(
+                        features, self.get_lose_signal(env_state)
+                    )
 
-            # NOTE: the reward is scaled by how many times this state has been visited
-            return time_step.transition(
-                features,
-                reward=EnvRewards.PREVIOUS_LOCATION * list_count,
-                discount=self.discount,
-            )
+                # NOTE: the reward is scaled by # of times this state has been visited
+                return time_step.transition(
+                    features,
+                    reward=EnvRewards.PREVIOUS_LOCATION * list_count,
+                    discount=self.discount,
+                )
 
         if len(agent.history) > 0:
             last_timestep = agent.history[-1]
@@ -485,13 +496,13 @@ class MathyEnv:
     ) -> Optional[MathExpression]:
         """Get the token that is `index` from the left of the expression"""
         count = 0
-        result = None
+        result: Optional[MathExpression] = None
 
         def visit_fn(
-            node: MathExpression, depth: int, data: Any
+            node: BinaryTreeNode, depth: int, data: Any
         ) -> Optional[VisitStop]:
             nonlocal result, count
-            result = node
+            result = node  # type:ignore
             if count == index:
                 return STOP
             count = count + 1
