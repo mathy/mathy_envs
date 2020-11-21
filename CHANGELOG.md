@@ -1,3 +1,12 @@
+## [0.9.3](https://github.com/mathy/mathy_envs/compare/v0.9.2...v0.9.3) (2020-11-21)
+
+
+### Features
+
+* **env:** add preferred_term_commute boolean ([de7de8f](https://github.com/mathy/mathy_envs/commit/de7de8f562949cf145ff86dd63c9e1c9d434874a))
+* **env:** add previous_state_penalty boolean ([a23ace1](https://github.com/mathy/mathy_envs/commit/a23ace1d72bfa2c632bb685656cea4256039c4ef))
+* **mathy_core:** update range to >= 0.8.2 ([3afb429](https://github.com/mathy/mathy_envs/commit/3afb4299b714cff9ae26debf89d133058744a2ee))
+
 ## [0.9.2](https://github.com/mathy/mathy_envs/compare/v0.9.1...v0.9.2) (2020-10-18)
 
 
