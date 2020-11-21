@@ -2,4 +2,4 @@ numpy
 colr
 pydantic>=1.0.0
 wasabi
-mathy_core>=0.8.0
+mathy_core>=0.8.2
