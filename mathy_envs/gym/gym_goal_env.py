@@ -66,7 +66,7 @@ class MathyGymGoalEnv(gym.GoalEnv):
         mask = len(self.mathy.rules) * self.mathy.max_seq_len
         values = self.mathy.max_seq_len
         nodes = self.mathy.max_seq_len
-        type = 2
+        type = 4
         time = 1
         obs_size = mask + values + nodes + type + time
         self.observation_space = spaces.Dict(

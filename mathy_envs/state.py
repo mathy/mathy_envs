@@ -5,6 +5,8 @@ import numpy as np
 from mathy_core.expressions import ConstantExpression, MathExpression, MathTypeKeys
 from mathy_core.parser import ExpressionParser
 
+from zlib import adler32
+
 from .types import ActionType
 from .util import pad_array
 
@@ -257,8 +259,25 @@ class MathyEnvState(object):
         if _problem_hash_cache is None:
             _problem_hash_cache = {}
         if self.agent.problem_type not in _problem_hash_cache:
-            hash_int = hash(self.agent.problem_type)
-            _problem_hash_cache[self.agent.problem_type] = [hash_int, hash_int * -1]
+            type_str = self.agent.problem_type
+            # Generate a normalized hash with values between 0.0 and 1.0
+            # The adler32 crc is used in zip files and is determinstic
+            # across runs while also being fast to calculate. It is NOT
+            # cryptographically secure.
+            hashes = np.asfarray(
+                [
+                    adler32(type_str.encode(encoding="utf-8")),
+                    adler32(type_str[::-1].encode(encoding="utf-8")),
+                    adler32(type_str.upper().encode(encoding="utf-8")),
+                    adler32(type_str.replace(".", "").encode(encoding="utf-8")),
+                ]
+            )
+            if hashes.sum() != 0.0:
+                hashes = (hashes - min(hashes)) / (max(hashes) - min(hashes))
+            values = hashes.tolist()
+
+            _problem_hash_cache[self.agent.problem_type] = values
+
         return _problem_hash_cache[self.agent.problem_type]
 
     def to_observation(
@@ -293,12 +312,12 @@ class MathyEnvState(object):
         if normalize is True:
             # https://bit.ly/3irAalH
             x = np.asfarray(values)
-            if x.sum() > 0.0:
-                x = (x - min(x)) / (max(x) - min(x))
+            if x.sum() != 0.0:
+                x = (x - min(x)) / (max(x) - min(x) + 1e-32)
             values = x.tolist()
             x = np.asfarray(vectors)
-            if x.sum() > 0.0:
-                x = (x - min(x)) / (max(x) - min(x))
+            if x.sum() != 0.0:
+                x = (x - min(x)) / (max(x) - min(x) + 1e-32)
             vectors = x.tolist()
 
         # Pass a 0-1 value indicating the relative episode time where 0.0 is

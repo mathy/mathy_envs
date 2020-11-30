@@ -54,7 +54,7 @@ class MathyGymEnv(gym.Env):
             mask = len(self.mathy.rules) * self.mathy.max_seq_len
             values = self.mathy.max_seq_len
             nodes = self.mathy.max_seq_len
-            type = 2
+            type = 4
             time = 1
             obs_size = mask + values + nodes + type + time
             self.observation_space = spaces.Box(
@@ -66,7 +66,7 @@ class MathyGymEnv(gym.Env):
             # obs = (
             #      nodes_tensor(1, 128),
             #      values_tensor(1, 128),
-            #      type_tensor(1, 2),
+            #      type_tensor(1, 4),
             #      time_tensor(1, 1)
             # )
             raise NotImplementedError(
