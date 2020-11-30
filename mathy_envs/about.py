@@ -1,5 +1,5 @@
 __title__ = "mathy_envs"
-__version__ = "0.9.3"
+__version__ = "0.10.0"
 __summary__ = "Learning environments for solving math problems step-by-step"
 __uri__ = "https://mathy.ai"
 __author__ = "Justin DuJardin"

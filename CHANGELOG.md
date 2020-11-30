@@ -1,3 +1,15 @@
+# [0.10.0](https://github.com/mathy/mathy_envs/compare/v0.9.3...v0.10.0) (2020-11-30)
+
+
+### Bug Fixes
+
+* **state:** normalize problem type hash in observation ([97b26b5](https://github.com/mathy/mathy_envs/commit/97b26b5df7dc579fb045fcb5e359a7b1812531f6))
+
+
+### BREAKING CHANGES
+
+* **state:** observation size is 2 floating point values more than before. In order to normalize problem type, we need more than two options or the normalized value will be likely to be 0.0 and 1.0 in some order. By adding two more variations on the input, we get a range of 4 values with at least 2 usually being not 1.0 or 0.0
+
 ## [0.9.3](https://github.com/mathy/mathy_envs/compare/v0.9.2...v0.9.3) (2020-11-21)
 
 
