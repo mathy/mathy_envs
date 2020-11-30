@@ -13,13 +13,28 @@ def test_state_to_observation():
 
 
 def test_state_to_observation_normalization():
-    """to_observation has defaults to allow calling with no arguments"""
+    """normalize argument converts all values to range 0.0-1.0"""
     env_state = MathyEnvState(problem="4+2")
     obs: MathyObservation = env_state.to_observation(normalize=False)
     assert np.max(obs.values) == 4.0
 
     norm: MathyObservation = env_state.to_observation(normalize=True)
     assert np.max(norm.values) == 1.0
+
+
+def test_state_to_observation_normalized_problem_type():
+    """normalize argument converts all values and type hash to range 0.0-1.0"""
+    env_state = MathyEnvState(problem="4+2")
+    obs: MathyObservation = env_state.to_observation()
+    print(obs.type)
+    assert np.max(obs.time) <= 1.0
+    assert np.min(obs.time) >= 0.0
+
+    assert np.max(obs.values) <= 1.0
+    assert np.min(obs.values) >= 0.0
+
+    assert np.max(obs.type) <= 1.0
+    assert np.min(obs.type) >= 0.0
 
 
 def test_state_encodes_hierarchy():
