@@ -7,7 +7,7 @@ from gym.envs.registration import register
 from mathy_core.rule import ExpressionChangeRule
 
 from ..env import MathyEnv
-from ..state import MathyEnvState, MathyObservation
+from ..state import MathyEnvState
 from ..time_step import is_terminal_transition
 from ..types import ActionType, MathyEnvProblemArgs
 from .masked_discrete import MaskedDiscrete
