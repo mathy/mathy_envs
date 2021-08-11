@@ -1,3 +1,28 @@
+# [0.11.0](https://github.com/mathy/mathy_envs/compare/v0.10.0...v0.11.0) (2021-08-11)
+
+
+### Bug Fixes
+
+* **env:** using "penalize" or "terminal" invalid action responses could loop infiitely ([f7bf88b](https://github.com/mathy/mathy_envs/commit/f7bf88bd42f6b58c0b76c34c240602aa5a57257e))
+
+
+### chore
+
+* drop MathyWindowObservation and observations_to_window ([75efcac](https://github.com/mathy/mathy_envs/commit/75efcac734051740b28825f166f4232e12b89cec))
+* **gym:** drop support for Goal based envs ([f84033e](https://github.com/mathy/mathy_envs/commit/f84033e4159957f6600b9c7a77590d8b694e59e9))
+
+
+### Features
+
+* **gym:** environments return np.ndarray observations only ([e441dfc](https://github.com/mathy/mathy_envs/commit/e441dfccfea7011551efb3514ea468716e097255))
+
+
+### BREAKING CHANGES
+
+* drop MathyWindowObservation and observations_to_window helpers for working with windowed observations. They were only used in the legacy custom mathy agents.
+* **gym:** this remove the "np_observation" flag from MathyGymEnv. All returned obseravtions are np.ndarrays now.
+* **gym:** This removed all Gym Goal-based environments. It's unclear that the implementation I provided worked as expected, and the experimental results were poor.
+
 # [0.10.0](https://github.com/mathy/mathy_envs/compare/v0.9.3...v0.10.0) (2020-11-30)
 
 
