@@ -10,12 +10,12 @@ class MaskedDiscrete(spaces.Discrete):
         >>> MaskedDiscrete(3, mask=(1,1,0))
     """
 
-    def update_mask(self, mask: Union[List[int], Tuple[int, ...]]) -> None:
+    def update_mask(self, mask: np.ndarray) -> None:
         assert isinstance(mask, (tuple, list, np.ndarray))
         assert len(mask) == self.n
         self.mask = np.array(mask)
 
-    def __init__(self, n: int, mask: Union[List[int], Tuple[int, ...]]):
+    def __init__(self, n: int, mask: np.ndarray):
         super(MaskedDiscrete, self).__init__(n)  # type:ignore
         self.update_mask(mask)
 

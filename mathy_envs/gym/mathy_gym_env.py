@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import gym
 import numpy as np
@@ -30,7 +30,6 @@ class MathyGymEnv(gym.Env):
         env_problem_args: Optional[MathyEnvProblemArgs] = None,
         env_problem: Optional[str] = None,
         env_max_moves: int = 64,
-        np_observation: bool = True,
         mask_as_probabilities: bool = False,
         repeat_problem: bool = False,
         **env_kwargs: Any,
@@ -38,7 +37,6 @@ class MathyGymEnv(gym.Env):
         self.state = None
         self.mask_as_probabilities = mask_as_probabilities
         self.repeat_problem = repeat_problem
-        self.np_observation = np_observation
         self.mathy = env_class(**env_kwargs)
         self.env_class = env_class
         self.env_problem_args = env_problem_args
@@ -49,29 +47,18 @@ class MathyGymEnv(gym.Env):
         else:
             self._challenge, _ = self.mathy.get_initial_state(env_problem_args)
 
-        self.action_space = MaskedDiscrete(self.action_size, [1] * self.action_size)
-        if np_observation is True:
-            mask = len(self.mathy.rules) * self.mathy.max_seq_len
-            values = self.mathy.max_seq_len
-            nodes = self.mathy.max_seq_len
-            type = 4
-            time = 1
-            obs_size = mask + values + nodes + type + time
-            self.observation_space = spaces.Box(
-                low=0, high=1, shape=(obs_size,), dtype="float32"
-            )
-        else:
-            # TODO: How to express a structured observation space in gym? e.g.
-            #
-            # obs = (
-            #      nodes_tensor(1, 128),
-            #      values_tensor(1, 128),
-            #      type_tensor(1, 4),
-            #      time_tensor(1, 1)
-            # )
-            raise NotImplementedError(
-                "not sure how to represent the mathy obs space in gym"
-            )
+        self.action_space = MaskedDiscrete(
+            self.action_size, np.array([1] * self.action_size)
+        )
+        mask = len(self.mathy.rules) * self.mathy.max_seq_len
+        values = self.mathy.max_seq_len
+        nodes = self.mathy.max_seq_len
+        type = 4
+        time = 1
+        obs_size = mask + values + nodes + type + time
+        self.observation_space = spaces.Box(
+            low=0, high=1, shape=(obs_size,), dtype="float32"
+        )
 
     @property
     def action_size(self) -> int:
@@ -79,7 +66,7 @@ class MathyGymEnv(gym.Env):
 
     def step(
         self, action: Union[int, ActionType]
-    ) -> Union[MathyObservation, np.ndarray]:
+    ) -> Tuple[np.ndarray[Any, Any], Any, bool, Dict[str, object]]:
         assert self.state is not None, "call reset() before stepping the environment"
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         done = is_terminal_transition(transition)
@@ -92,7 +79,7 @@ class MathyGymEnv(gym.Env):
             info["win"] = transition.reward > 0.0
         return self._observe(self.state), transition.reward, done, info
 
-    def _observe(self, state: MathyEnvState) -> Union[MathyObservation, np.ndarray]:
+    def _observe(self, state: MathyEnvState) -> np.ndarray:
         """Observe the environment at the given state, updating the observation
         space and action space for the given state."""
         action_mask = self.mathy.get_valid_moves(state)
@@ -105,16 +92,14 @@ class MathyGymEnv(gym.Env):
             mask_sum = np.sum(flat_mask)
             if mask_sum > 0.0:
                 flat_mask = flat_mask / mask_sum
-        if self.np_observation:
-            nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
-            values = np.array(observation.values, dtype="float32").reshape(-1)
-            np_observation = np.concatenate(
-                [observation.type, observation.time, nodes, values, flat_mask], axis=-1
-            )
-            return np_observation
-        return observation
+        nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
+        values = np.array(observation.values, dtype="float32").reshape(-1)
+        np_observation = np.concatenate(
+            [observation.type, observation.time, nodes, values, flat_mask], axis=-1
+        )
+        return np_observation
 
-    def reset(self) -> Union[MathyObservation, np.ndarray]:
+    def reset(self) -> np.ndarray:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
         if self.repeat_problem:
@@ -126,9 +111,7 @@ class MathyGymEnv(gym.Env):
             )
         return self._observe(self.state)
 
-    def reset_with_input(
-        self, problem_text: str, max_moves: int = 16
-    ) -> Union[MathyObservation, np.ndarray]:
+    def reset_with_input(self, problem_text: str, max_moves: int = 16) -> np.ndarray:
         # If the episode is being reset because it ended, assert the validity
         # of the last problem outcome
         if self.state is not None:

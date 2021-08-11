@@ -459,8 +459,8 @@ class MathyEnv:
                     "The action {rule} does not exist in the environment rule list"
                 )
             all_actions = self.get_actions_for_node(expression, [rule])
-            valid_actions = np.nonzero(all_actions[found])
-            action = random.choice(valid_actions[0])
+            valid_actions = np.nonzero(all_actions[found])[0].tolist()
+            action: int = random.choice(valid_actions)
             return (found, int(action))
 
         all_actions = self.get_actions_for_node(expression)

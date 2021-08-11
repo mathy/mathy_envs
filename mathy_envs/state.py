@@ -298,7 +298,7 @@ class MathyEnvState(object):
         vectors: NodeIntList = []
         values: NodeValuesFloatList = []
         if move_mask is None:
-            move_mask = np.zeros(len(nodes))
+            move_mask = np.zeros(len(nodes)).tolist()
         assert move_mask is not None
         for node in nodes:
             vectors.append(node.type_id)
