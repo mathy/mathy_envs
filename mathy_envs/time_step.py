@@ -30,19 +30,17 @@ Mathy doesn't use these features and the overhead of loading tensorflow
 to pass environment states around is not great for things like CLI start
 times.
 """
-import collections
-
 import numpy
 
 from mathy_envs.state import MathyObservation
+from typing import NamedTuple
 
 
-class TimeStep(
-    collections.namedtuple(
-        "TimeStep", ["step_type", "reward", "discount", "observation"]
-    )
-):
-    __slots__ = ()
+class TimeStep(NamedTuple):
+    step_type: numpy.ndarray
+    reward: float
+    discount: float
+    observation: MathyObservation
 
     def __hash__(self) -> int:
         return hash(tuple(self))

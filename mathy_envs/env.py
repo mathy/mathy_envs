@@ -304,14 +304,22 @@ class MathyEnv:
                 raise_with_history("Invalid Action", msg, agent.history)
             elif self.invalid_action_response == "penalize":
                 #
-                out_env = MathyEnvState.copy(env_state)
+                out_env = env_state.get_out_state(
+                    problem=env_state.agent.problem,
+                    action=action,
+                    moves_remaining=agent.moves_remaining - 1,
+                )
                 obs = out_env.to_observation(
                     self.get_valid_moves(out_env), parser=self.parser
                 )
                 transition = time_step.transition(obs, EnvRewards.INVALID_MOVE)
                 return out_env, transition, ExpressionChangeRule(BaseRule())
             elif self.invalid_action_response == "terminal":
-                out_env = MathyEnvState.copy(env_state)
+                out_env = env_state.get_out_state(
+                    problem=env_state.agent.problem,
+                    action=action,
+                    moves_remaining=0,
+                )
                 obs = out_env.to_observation(
                     self.get_valid_moves(out_env), parser=self.parser
                 )
@@ -451,8 +459,8 @@ class MathyEnv:
                     "The action {rule} does not exist in the environment rule list"
                 )
             all_actions = self.get_actions_for_node(expression, [rule])
-            valid_actions = np.nonzero(all_actions[found])
-            action = random.choice(valid_actions[0])
+            valid_actions = np.nonzero(all_actions[found])[0].tolist()
+            action: int = random.choice(valid_actions)
             return (found, int(action))
 
         all_actions = self.get_actions_for_node(expression)
