@@ -67,60 +67,6 @@ MathyObservation.time.__doc__ = "float value between 0.0 and 1.0 indicating the 
 # fmt: on
 
 
-class MathyWindowObservation(NamedTuple):
-    """A featurized observation from an n-step sequence of environment states."""
-
-    nodes: WindowNodeIntList
-    mask: WindowNodeMaskIntList
-    values: WindowNodeValuesFloatList
-    type: WindowProblemTypeIntList
-    time: WindowTimeFloatList
-
-    @property
-    def real_length(self) -> int:
-        """Get the unpadded length of the window"""
-        count = 0
-        for t in self.type:
-            if (np.array(t) == [0, 0]).all():
-                continue
-            count += 1
-        return count
-
-    def to_inputs(self) -> dict:
-
-        result = {
-            "nodes_in": np.asarray(self.nodes, dtype="int32"),
-            "mask_in": np.asarray(self.mask, dtype="int32"),
-            "values_in": np.asarray(self.values, dtype="float32"),
-            "type_in": np.asarray(self.type, dtype="float32"),
-            "time_in": np.asarray(self.time, dtype="float32"),
-        }
-        for r in result.values():
-            for s in r.shape:
-                assert s is not None
-        return result
-
-    def to_input_shapes(self) -> List[Any]:
-
-        result = [
-            np.asarray(self.nodes).shape,
-            np.asarray(self.mask).shape,
-            np.asarray(self.values).shape,
-            np.asarray(self.type).shape,
-            np.asarray(self.time).shape,
-        ]
-        return result
-
-
-# fmt: off
-MathyWindowObservation.nodes.__doc__ = "n-step list of node sequences `shape=[n, max(len(s))]`" # noqa
-MathyWindowObservation.mask.__doc__ = "n-step list of node sequence masks `shape=[n, max(len(s))]`" # noqa
-MathyWindowObservation.values.__doc__ = "n-step list of value sequences, with non number indices set to 0.0 `shape=[n, max(len(s))]`" # noqa
-MathyWindowObservation.type.__doc__ = "n-step problem type hash `shape=[n, 2]`" # noqa
-MathyWindowObservation.time.__doc__ = "n-step problem time values `shape=[n, 2]`" # noqa
-# fmt: on
-
-
 class MathyEnvStateStep(NamedTuple):
     """Capture summarized environment state for a previous timestep so the
     agent can use context from its history when making new predictions."""
@@ -136,22 +82,6 @@ MathyEnvStateStep.action.__doc__ = "a tuple indicating the chosen action and the
 
 
 _problem_hash_cache: Optional[Dict[str, List[int]]] = None
-
-
-def observations_to_window(
-    observations: List[MathyObservation], pad_length: int
-) -> MathyWindowObservation:
-    """Combine a sequence of observations into an observation window"""
-    output = MathyWindowObservation(nodes=[], mask=[], values=[], type=[], time=[])
-
-    for obs in observations:
-        output.nodes.append(pad_array(obs.nodes, pad_length, MathTypeKeys["empty"]))
-        output.mask.append([pad_array(p, pad_length, 0) for p in obs.mask])
-        output.values.append(pad_array(obs.values, pad_length, 0.0))
-        # repeat type/time values so they can be combined with nodes/values
-        output.type.append(pad_array([], pad_length, obs.type))
-        output.time.append(pad_array([], pad_length, obs.time))
-    return output
 
 
 class MathyAgentState:
