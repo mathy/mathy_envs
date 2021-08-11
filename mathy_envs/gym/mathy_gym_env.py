@@ -66,7 +66,7 @@ class MathyGymEnv(gym.Env):
 
     def step(
         self, action: Union[int, ActionType]
-    ) -> Tuple[np.ndarray[Any, Any], Any, bool, Dict[str, object]]:
+    ) -> Tuple[np.ndarray, Any, bool, Dict[str, object]]:
         assert self.state is not None, "call reset() before stepping the environment"
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         done = is_terminal_transition(transition)
