@@ -60,29 +60,6 @@ def test_gym_env_spaces():
     assert wrapper_env.observation_space.shape == observation.shape
 
 
-def test_gym_goal_env_spaces():
-    import gym
-
-    from mathy_envs.gym import MaskedDiscrete, MathyGymGoalEnv
-
-    wrapper_env: MathyGymGoalEnv = gym.make("mathy-goal-poly-easy-v0")  # type:ignore
-    mathy: MathyEnv = wrapper_env.mathy
-    observation: np.ndarray = wrapper_env.reset()
-
-    # Has a masked discrete (finite) action space
-    assert wrapper_env.action_space is not None
-    assert isinstance(wrapper_env.action_space, MaskedDiscrete)
-    # Action space is (num_rules * max_seq_len)
-    assert wrapper_env.action_size == int(len(mathy.rules) * mathy.max_seq_len)
-    assert wrapper_env.action_space.shape == tuple()
-
-    # Observation matches the space spec
-    assert (
-        wrapper_env.observation_space["observation"].shape
-        == observation["observation"].shape
-    )
-
-
 def test_gym_probability_action_mask():
     import gym
 
