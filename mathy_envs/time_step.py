@@ -30,10 +30,11 @@ Mathy doesn't use these features and the overhead of loading tensorflow
 to pass environment states around is not great for things like CLI start
 times.
 """
+from typing import NamedTuple
+
 import numpy
 
 from mathy_envs.state import MathyObservation
-from typing import NamedTuple
 
 
 class TimeStep(NamedTuple):

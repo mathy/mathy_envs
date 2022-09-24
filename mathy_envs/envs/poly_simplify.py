@@ -19,7 +19,7 @@ class PolySimplify(MathyEnv):
      operators are excluded. This is a good area for improvement.
     """
 
-    def __init__(self, ops: List[str] = None, **kwargs: Any):
+    def __init__(self, ops: Optional[List[str]] = None, **kwargs: Any):
         super().__init__(**kwargs)
         if ops is None:
             ops = ["+"]
