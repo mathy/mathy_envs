@@ -1,8 +1,8 @@
 import sys
+import typing
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, NamedTuple, Tuple
-
-from pydantic import BaseModel, Field
 
 # Use typing_extensions for Python < 3.8
 if sys.version_info < (3, 8):
@@ -11,25 +11,24 @@ else:
     from typing import Literal  # noqa
 
 
-class MathyEnvDifficulty(str, Enum):
-    easy: str = Field(
-        default="easy",
-        title="Easy Problems",
-        description="The simplest form of problems that demonstrate a task",
-    )
-    normal: str = Field(
-        default="normal",
-        title="Normal Problems",
-        description="Challenging problems that involve more terms",
-    )
-    hard: str = Field(
-        default="hard",
-        title="Hard Problems",
-        description="Difficult problems that have intentionally large expressions",
-    )
+class MathyEnvDifficulty(Enum):
+    # The simplest form of problems that demonstrate a task
+    easy = "easy"
+    # Challenging problems that involve more terms
+    normal = "normal"
+    # Difficult problems that have intentionally large expressions
+    hard = "hard"
 
 
-class MathyEnvProblemArgs(BaseModel):
+MathyEnvDifficultyValue = typing.Literal["easy", "normal", "hard"]
+
+assert set(typing.get_args(MathyEnvDifficultyValue)) == {
+    member.value for member in MathyEnvDifficulty
+}
+
+
+@dataclass
+class MathyEnvProblemArgs:
     difficulty: MathyEnvDifficulty = MathyEnvDifficulty.easy
 
 
