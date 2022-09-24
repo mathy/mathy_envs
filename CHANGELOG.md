@@ -1,3 +1,16 @@
+## [0.11.1](https://github.com/mathy/mathy_envs/compare/v0.11.0...v0.11.1) (2022-09-24)
+
+
+### Bug Fixes
+
+* **gym:** pin version to < 0.26.0 ([ba8137c](https://github.com/mathy/mathy_envs/commit/ba8137cf82f4310d8a57f221692960e1b8118546))
+
+
+### Features
+
+* **mathy_core:** update to mathy_core >= 0.8.6 ([ede3d8d](https://github.com/mathy/mathy_envs/commit/ede3d8d441116f7d0700261c0b3bb815877aa997))
+* **requirements:** remove pydantic in favor of dataclass ([9063747](https://github.com/mathy/mathy_envs/commit/9063747de54f216b080484b84e930f375a3aff96))
+
 # [0.11.0](https://github.com/mathy/mathy_envs/compare/v0.10.0...v0.11.0) (2021-08-11)
 
 
