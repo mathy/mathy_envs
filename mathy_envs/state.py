@@ -1,11 +1,10 @@
 from enum import IntEnum
 from typing import Any, Dict, List, NamedTuple, Optional
+from zlib import adler32
 
 import numpy as np
 from mathy_core.expressions import ConstantExpression, MathExpression, MathTypeKeys
 from mathy_core.parser import ExpressionParser
-
-from zlib import adler32
 
 from .types import ActionType
 from .util import pad_array
@@ -142,7 +141,7 @@ class MathyEnvState(object):
     def __init__(
         self,
         state: Optional["MathyEnvState"] = None,
-        problem: str = None,
+        problem: Optional[str] = None,
         max_moves: int = 10,
         num_rules: int = 0,
         problem_type: str = "mathy.unknown",
@@ -319,7 +318,7 @@ class MathyEnvState(object):
         state = cls.from_string(input_string)
         return state
 
-    def to_np(self, pad_to: int = None) -> np.ndarray:
+    def to_np(self, pad_to: Optional[int] = None) -> np.ndarray:
         """Convert a state object into a numpy representation"""
         string = self.to_string()
         if pad_to is not None:

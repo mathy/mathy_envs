@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import gym
 import numpy as np
+from gym import error as gym_error
 from gym import spaces
 from gym.envs.registration import register
 from mathy_core.rule import ExpressionChangeRule
@@ -19,6 +20,7 @@ class MathyGymEnv(gym.Env):
 
     mathy: MathyEnv
     state: Optional[MathyEnvState]
+    action_space: MaskedDiscrete
     _challenge: Optional[MathyEnvState]
     env_class: Type[MathyEnv]
     env_problem_args: Optional[MathyEnvProblemArgs]
@@ -57,7 +59,7 @@ class MathyGymEnv(gym.Env):
         time = 1
         obs_size = mask + values + nodes + type + time
         self.observation_space = spaces.Box(
-            low=0, high=1, shape=(obs_size,), dtype="float32"
+            low=0, high=1, shape=(obs_size,), dtype=float
         )
 
     @property
@@ -95,11 +97,17 @@ class MathyGymEnv(gym.Env):
         nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
         values = np.array(observation.values, dtype="float32").reshape(-1)
         np_observation = np.concatenate(
-            [observation.type, observation.time, nodes, values, flat_mask], axis=-1
+            np.array([observation.type, observation.time, nodes, values, flat_mask]),
+            axis=-1,
         )
         return np_observation
 
-    def reset(self) -> np.ndarray:
+    def reset(
+        self,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[Dict[Any, Any]] = None,
+    ) -> Union[Any, Tuple[Any, Dict[Any, Any]]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
         if self.repeat_problem:
@@ -147,5 +155,5 @@ def safe_register(id: str, **kwargs: Any) -> None:
     """Ignore re-register errors."""
     try:
         register(id, **kwargs)
-    except gym.error.Error:
+    except gym_error.Error:
         pass

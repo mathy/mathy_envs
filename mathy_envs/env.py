@@ -3,8 +3,8 @@ from itertools import groupby
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
-from mathy_core import VisitStop
-from mathy_core.expressions import STOP, MathExpression
+from mathy_core import STOP
+from mathy_core.expressions import MathExpression
 from mathy_core.parser import ExpressionParser, InvalidSyntax
 from mathy_core.rule import BaseRule, ExpressionChangeRule
 from mathy_core.rules import (
@@ -15,7 +15,7 @@ from mathy_core.rules import (
     DistributiveMultiplyRule,
     VariableMultiplyRule,
 )
-from mathy_core.tree import BinaryTreeNode
+from mathy_core.tree import BinaryTreeNode, VisitStop
 from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
@@ -52,7 +52,7 @@ class MathyEnv:
     def __init__(
         self,
         *,
-        rules: List[BaseRule] = None,
+        rules: Optional[List[BaseRule]] = None,
         max_moves: int = 20,
         verbose: bool = False,
         invalid_action_response: InvalidActionResponses = "raise",
@@ -351,7 +351,7 @@ class MathyEnv:
         env_state: MathyEnvState,
         action_name: str,
         token_index: int = -1,
-        change: ExpressionChangeRule = None,
+        change: Optional[ExpressionChangeRule] = None,
         change_reward: float = 0.0,
         pretty: bool = False,
     ) -> None:
@@ -408,7 +408,7 @@ class MathyEnv:
         env_state: MathyEnvState,
         action_name: str,
         token_index: int = -1,
-        change: ExpressionChangeRule = None,
+        change: Optional[ExpressionChangeRule] = None,
         change_reward: float = 0.0,
         pretty: bool = False,
     ) -> str:
@@ -432,7 +432,7 @@ class MathyEnv:
         moves_left = str(env_state.agent.moves_remaining).zfill(2)
         valid_rules = self.get_valid_rules(env_state)
         valid_moves = self.get_valid_moves(env_state)
-        num_moves = "{}".format(len(np.nonzero(valid_moves)[0])).zfill(3)
+        num_moves = "{}".format(len(np.nonzero(np.array(valid_moves))[0])).zfill(3)
         move_codes = [get_move_shortname(i, m) for i, m in enumerate(valid_rules)]
         moves = " ".join(move_codes)
         reward = f"{change_reward:.2}"
@@ -444,7 +444,7 @@ class MathyEnv:
     def random_action(
         self,
         expression: MathExpression,
-        rule: Type[BaseRule] = None,
+        rule: Optional[Type[BaseRule]] = None,
     ) -> Tuple[int, int]:
         """Get a random action index that represents a particular rule"""
 
@@ -565,7 +565,7 @@ class MathyEnv:
     def get_actions_for_node(
         self,
         expression: MathExpression,
-        rule_list: List[Type[BaseRule]] = None,
+        rule_list: Optional[List[Type[BaseRule]]] = None,
     ) -> List[List[int]]:
         """Return a valid actions mask for the given expression and rule list.
 
