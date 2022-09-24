@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 from gym import spaces
@@ -19,7 +19,7 @@ class MaskedDiscrete(spaces.Discrete):
         super(MaskedDiscrete, self).__init__(n)  # type:ignore
         self.update_mask(mask)
 
-    def sample(self, mask: Optional[np.ndarray[Any, Any]] = None) -> int:
+    def sample(self, mask: Optional[np.ndarray] = None) -> int:
         mask = self.mask if mask is None else mask
         probability = self.mask / np.sum(self.mask)
         return self.np_random.choice(self.n, p=probability)
