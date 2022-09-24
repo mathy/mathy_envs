@@ -3,3 +3,4 @@ colr
 pydantic>=1.0.0
 wasabi
 mathy_core>=0.8.2
+gym<0.26.0
