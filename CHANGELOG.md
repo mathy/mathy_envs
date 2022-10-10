@@ -1,3 +1,10 @@
+## [0.11.4](https://github.com/mathy/mathy_envs/compare/v0.11.3...v0.11.4) (2022-10-10)
+
+
+### Bug Fixes
+
+* **python:** use typing_extensions for py < 3.8 ([f963652](https://github.com/mathy/mathy_envs/commit/f9636522f71822ef17204988ad31ecf53cbba7bf))
+
 ## [0.11.3](https://github.com/mathy/mathy_envs/compare/v0.11.2...v0.11.3) (2022-10-10)
 
 
