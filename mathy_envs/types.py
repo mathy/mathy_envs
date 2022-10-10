@@ -6,9 +6,9 @@ from typing import List, NamedTuple, Tuple
 
 # Use typing_extensions for Python < 3.8
 if sys.version_info < (3, 8):
-    from typing_extensions import Literal  # noqa
+    from typing_extensions import Literal, get_args  # noqa
 else:
-    from typing import Literal  # noqa
+    from typing import Literal, get_args  # noqa
 
 
 class MathyEnvDifficulty(Enum):
@@ -20,9 +20,9 @@ class MathyEnvDifficulty(Enum):
     hard = "hard"
 
 
-MathyEnvDifficultyValue = typing.Literal["easy", "normal", "hard"]
+MathyEnvDifficultyValue = Literal["easy", "normal", "hard"]
 
-assert set(typing.get_args(MathyEnvDifficultyValue)) == {
+assert set(get_args(MathyEnvDifficultyValue)) == {
     member.value for member in MathyEnvDifficulty
 }
 
