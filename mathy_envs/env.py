@@ -14,6 +14,7 @@ from mathy_core.rules import (
     DistributiveFactorOutRule,
     DistributiveMultiplyRule,
     VariableMultiplyRule,
+    RestateSubtractionRule,
 )
 from mathy_core.tree import BinaryTreeNode, VisitStop
 from mathy_core.util import compare_expression_string_values, raise_with_history
@@ -93,6 +94,7 @@ class MathyEnv:
             DistributiveFactorOutRule(),
             AssociativeSwapRule(),
             VariableMultiplyRule(),
+            RestateSubtractionRule(),
         ]
 
     @property
@@ -122,6 +124,7 @@ class MathyEnv:
         #       states become negative reward even if their action is otherwise
         #       rewarding.
         return [
+            RestateSubtractionRule,
             ConstantsSimplifyRule,
             DistributiveFactorOutRule,
             VariableMultiplyRule,
