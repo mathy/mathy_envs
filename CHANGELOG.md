@@ -1,3 +1,10 @@
+## [0.11.2](https://github.com/mathy/mathy_envs/compare/v0.11.1...v0.11.2) (2022-10-10)
+
+
+### Bug Fixes
+
+* **gym:** warning about legacy ragged to array conversion ([60ce708](https://github.com/mathy/mathy_envs/commit/60ce708d37b0f81e45cb0578fe8ab10fe86833c0))
+
 ## [0.11.1](https://github.com/mathy/mathy_envs/compare/v0.11.0...v0.11.1) (2022-09-24)
 
 
