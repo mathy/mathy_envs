@@ -1,3 +1,10 @@
+## [0.11.3](https://github.com/mathy/mathy_envs/compare/v0.11.2...v0.11.3) (2022-10-10)
+
+
+### Features
+
+* **env:** add RestateSubtractionRule to defaults ([c634a0e](https://github.com/mathy/mathy_envs/commit/c634a0efd8c1977f43f65866d3066559106cfdc3))
+
 ## [0.11.2](https://github.com/mathy/mathy_envs/compare/v0.11.1...v0.11.2) (2022-10-10)
 
 
