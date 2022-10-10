@@ -97,7 +97,10 @@ class MathyGymEnv(gym.Env):
         nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
         values = np.array(observation.values, dtype="float32").reshape(-1)
         np_observation = np.concatenate(
-            np.array([observation.type, observation.time, nodes, values, flat_mask]),
+            np.array(
+                [observation.type, observation.time, nodes, values, flat_mask],
+                dtype="object",
+            ),
             axis=-1,
         )
         return np_observation
