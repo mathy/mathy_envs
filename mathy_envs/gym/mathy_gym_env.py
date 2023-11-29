@@ -71,18 +71,21 @@ class MathyGymEnv(gym.Env):
     ) -> Tuple[np.ndarray, Any, bool, bool, Dict[str, object]]:
         assert self.state is not None, "call reset() before stepping the environment"
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
-        done = is_terminal_transition(transition)
+        terminated = is_terminal_transition(transition)
+        truncated = self.state.agent.moves_remaining <= 0
         info = {
             "transition": transition,
-            "done": done,
+            "done": terminated,
+            "truncated": truncated,
             "valid": change.result is not None,
         }
-        if done:
+        if terminated or truncated:
             info["win"] = transition.reward > 0.0
-        # TODO: What is the second done here, need to update it.
-        return self._observe(self.state), transition.reward, done, done, info
 
-    def _observe(self, state: MathyEnvState) -> np.ndarray:
+        obs, info = self._observe(self.state)
+        return obs, transition.reward, terminated, truncated, info
+
+    def _observe(self, state: MathyEnvState) -> Tuple[np.ndarray, dict]:
         """Observe the environment at the given state, updating the observation
         space and action space for the given state."""
         action_mask = self.mathy.get_valid_moves(state)
@@ -97,21 +100,22 @@ class MathyGymEnv(gym.Env):
                 flat_mask = flat_mask / mask_sum
         nodes = np.array(observation.nodes, dtype="float32").reshape(-1)
         values = np.array(observation.values, dtype="float32").reshape(-1)
-        np_observation = np.concatenate(
+        obs = np.concatenate(
             np.array(
                 [observation.type, observation.time, nodes, values, flat_mask],
                 dtype="object",
             ),
             axis=-1,
+            dtype="float32",
         )
-        return np_observation
+        return obs, {}
 
     def reset(
         self,
         seed: Optional[int] = None,
         return_info: bool = False,
         options: Optional[Dict[Any, Any]] = None,
-    ) -> Union[Any, Tuple[Any, Dict[Any, Any]]]:
+    ) -> Tuple[Any, Dict[Any, Any]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
         if self.repeat_problem:
@@ -123,7 +127,9 @@ class MathyGymEnv(gym.Env):
             )
         return self._observe(self.state)
 
-    def reset_with_input(self, problem_text: str, max_moves: int = 16) -> np.ndarray:
+    def reset_with_input(
+        self, problem_text: str, max_moves: int = 16
+    ) -> Tuple[np.ndarray, dict]:
         # If the episode is being reset because it ended, assert the validity
         # of the last problem outcome
         if self.state is not None:

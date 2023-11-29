@@ -29,6 +29,7 @@ def test_gym_instantiate_envs():
     # Each env can be created and produce an initial observation without
     # special configuration.
     for gym_env_spec in mathy_gym_envs:
+        print(f"Testing {gym_env_spec.id}...")
         wrapper_env: MathyGymEnv = gym.make(gym_env_spec.id)  # type:ignore
         assert wrapper_env is not None
 
@@ -36,7 +37,7 @@ def test_gym_instantiate_envs():
         print("initial observation:", obs)
         action = wrapper_env.action_space.sample()
         wrapper_env.step(action)
-        observation = wrapper_env.reset()
+        observation, info = wrapper_env.reset()
         assert isinstance(observation, (dict, np.ndarray, MathyObservation))
         assert observation is not None
 
@@ -48,7 +49,7 @@ def test_gym_env_spaces():
 
     wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0")  # type:ignore
     mathy: MathyEnv = wrapper_env.mathy
-    observation = wrapper_env.reset()
+    observation, info = wrapper_env.reset()
 
     # Has a masked discrete (finite) action space
     assert wrapper_env.action_space is not None
@@ -69,7 +70,7 @@ def test_gym_probability_action_mask():
     env: MathyGymEnv = gym.make(
         "mathy-poly-easy-v0", mask_as_probabilities=True
     )  # type:ignore
-    obs = env.reset()
+    obs, info = env.reset()
     offset = -env.mathy.action_size
     action_mask = np.array(obs[offset:])
     # When returned as probabilities, the mask sums to almost 1.0
@@ -78,7 +79,7 @@ def test_gym_probability_action_mask():
     env: MathyGymEnv = gym.make(
         "mathy-poly-easy-v0", mask_as_probabilities=False
     )  # type:ignore
-    obs = env.reset()
+    obs, info = env.reset()
     # When not as probabilities, the mask is a bunch of 1s and 0s
     action_mask = np.array(obs[offset:])
     assert np.sum(action_mask) > 1
