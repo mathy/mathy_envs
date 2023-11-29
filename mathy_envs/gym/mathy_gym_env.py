@@ -59,7 +59,7 @@ class MathyGymEnv(gym.Env):
         time = 1
         obs_size = mask + values + nodes + type + time
         self.observation_space = spaces.Box(
-            low=0, high=1, shape=(obs_size,), dtype=float
+            low=0, high=1, shape=(obs_size,), dtype=np.float32
         )
 
     @property
@@ -67,8 +67,8 @@ class MathyGymEnv(gym.Env):
         return self.mathy.action_size
 
     def step(
-        self, action: Union[int, ActionType]
-    ) -> Tuple[np.ndarray, Any, bool, Dict[str, object]]:
+        self, action: Union[int, np.int64, ActionType]
+    ) -> Tuple[np.ndarray, Any, bool, bool, Dict[str, object]]:
         assert self.state is not None, "call reset() before stepping the environment"
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         done = is_terminal_transition(transition)
@@ -79,7 +79,8 @@ class MathyGymEnv(gym.Env):
         }
         if done:
             info["win"] = transition.reward > 0.0
-        return self._observe(self.state), transition.reward, done, info
+        # TODO: What is the second done here, need to update it.
+        return self._observe(self.state), transition.reward, done, done, info
 
     def _observe(self, state: MathyEnvState) -> np.ndarray:
         """Observe the environment at the given state, updating the observation
