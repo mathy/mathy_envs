@@ -5,9 +5,11 @@ from typing import List, NamedTuple, Tuple
 
 # Use typing_extensions for Python < 3.8
 if sys.version_info < (3, 8):
-    from typing_extensions import Literal, get_args  # noqa
+    from typing_extensions import Literal  # noqa
+    from typing_extensions import get_args
 else:
-    from typing import Literal, get_args  # noqa
+    from typing import Literal  # noqa
+    from typing import get_args
 
 
 class MathyEnvDifficulty(Enum):

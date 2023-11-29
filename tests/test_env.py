@@ -54,7 +54,6 @@ def test_env_random_actions():
 
 
 def test_env_invalid_action_behaviors():
-
     problem = "4x + 2x"
     env = MathyEnv(invalid_action_response="raise")
     env_state = MathyEnvState(problem=problem, max_moves=35)
@@ -86,7 +85,6 @@ def test_env_invalid_action_behaviors():
 
 
 def test_env_terminal_conditions():
-
     expectations = [
         ("70656 * (x^2 * z^6)", True),
         ("b * (44b^2)", False),
@@ -248,7 +246,6 @@ def test_mathy_env_previous_state_penalty():
 
 
 def test_mathy_env_win_conditions():
-
     expectations = [
         ("70656 * (x^2 * z^6)", True),
         ("b * (44b^2)", False),

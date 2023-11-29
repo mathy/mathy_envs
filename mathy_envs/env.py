@@ -13,8 +13,8 @@ from mathy_core.rules import (
     ConstantsSimplifyRule,
     DistributiveFactorOutRule,
     DistributiveMultiplyRule,
-    VariableMultiplyRule,
     RestateSubtractionRule,
+    VariableMultiplyRule,
 )
 from mathy_core.tree import BinaryTreeNode, VisitStop
 from mathy_core.util import compare_expression_string_values, raise_with_history
