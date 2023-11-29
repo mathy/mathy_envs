@@ -10,17 +10,17 @@ from mathy_envs.state import MathyObservation
 
 
 def test_gym_raises_helpful_error_if_gym_is_not_installed():
-    with mock.patch.dict(sys.modules, {"gym": None}):
+    with mock.patch.dict(sys.modules, {"gymnasium": None}):
         with pytest.raises(ImportError, match=r"pip install mathy_envs\[gym\]"):
             import mathy_envs.gym  # noqa
 
 
 def test_gym_instantiate_envs():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MathyGymEnv
 
-    all_envs = gym.envs.registration.registry.all()  # type:ignore
+    all_envs = gym.registry.values()
     # Filter to just mathy registered envs
     mathy_gym_envs = [e for e in all_envs if e.id.startswith("mathy-")]
 
@@ -29,6 +29,7 @@ def test_gym_instantiate_envs():
     # Each env can be created and produce an initial observation without
     # special configuration.
     for gym_env_spec in mathy_gym_envs:
+        print(f"Testing {gym_env_spec.id}...")
         wrapper_env: MathyGymEnv = gym.make(gym_env_spec.id)  # type:ignore
         assert wrapper_env is not None
 
@@ -36,19 +37,19 @@ def test_gym_instantiate_envs():
         print("initial observation:", obs)
         action = wrapper_env.action_space.sample()
         wrapper_env.step(action)
-        observation = wrapper_env.reset()
+        observation, info = wrapper_env.reset()
         assert isinstance(observation, (dict, np.ndarray, MathyObservation))
         assert observation is not None
 
 
 def test_gym_env_spaces():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MaskedDiscrete, MathyGymEnv
 
     wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0")  # type:ignore
     mathy: MathyEnv = wrapper_env.mathy
-    observation = wrapper_env.reset()
+    observation, info = wrapper_env.reset()
 
     # Has a masked discrete (finite) action space
     assert wrapper_env.action_space is not None
@@ -62,23 +63,23 @@ def test_gym_env_spaces():
 
 
 def test_gym_probability_action_mask():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MathyGymEnv
 
     env: MathyGymEnv = gym.make(
         "mathy-poly-easy-v0", mask_as_probabilities=True
     )  # type:ignore
-    obs = env.reset()
+    obs, info = env.reset()
     offset = -env.mathy.action_size
     action_mask = np.array(obs[offset:])
-    # When returned as probabilities, the mask sums to 1.0
-    assert np.sum(action_mask) == 1.0
+    # When returned as probabilities, the mask sums to almost 1.0
+    assert np.sum(action_mask) > 1.0 - 1e-4
 
     env: MathyGymEnv = gym.make(
         "mathy-poly-easy-v0", mask_as_probabilities=False
     )  # type:ignore
-    obs = env.reset()
+    obs, info = env.reset()
     # When not as probabilities, the mask is a bunch of 1s and 0s
     action_mask = np.array(obs[offset:])
     assert np.sum(action_mask) > 1

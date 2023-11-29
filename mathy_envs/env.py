@@ -272,7 +272,7 @@ class MathyEnv:
         )
 
     def get_next_state(
-        self, env_state: MathyEnvState, action: Union[int, ActionType]
+        self, env_state: MathyEnvState, action: Union[int, np.int64, ActionType]
     ) -> Tuple[MathyEnvState, time_step.TimeStep, ExpressionChangeRule]:
         """
         # Parameters
@@ -597,7 +597,7 @@ class MathyEnv:
         """Convert env_state to a string for MCTS cache"""
         return env_state.agent.problem
 
-    def to_action(self, action: Union[int, ActionType]) -> ActionType:
+    def to_action(self, action: Union[int, np.int64, ActionType]) -> ActionType:
         """Resolve a given action input to a tuple of (rule_index, node_index).
 
         When given an int, it is treated as an index into the flattened 2d action
@@ -606,4 +606,4 @@ class MathyEnv:
             return action
         token_index = action % self.max_seq_len
         action_index = int((action - token_index) / self.max_seq_len)
-        return action_index, token_index
+        return action_index, int(token_index)

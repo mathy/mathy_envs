@@ -58,11 +58,11 @@ class MathyObservation(NamedTuple):
 
 
 # fmt: off
-MathyObservation.nodes.__doc__ = "tree node types in the current environment state shape=[n,]" # noqa
-MathyObservation.mask.__doc__ = "0/1 mask where 0 indicates an invalid action shape=[n,]" # noqa
-MathyObservation.values.__doc__ = "tree node value sequences, with non number indices set to 0.0 shape=[n,]" # noqa
-MathyObservation.type.__doc__ = "two column hash of problem environment type shape=[2,]" # noqa
-MathyObservation.time.__doc__ = "float value between 0.0 and 1.0 indicating the time elapsed shape=[1,]" # noqa
+MathyObservation.nodes.__doc__ = "tree node types in the current environment state shape=[n,]"  # noqa
+MathyObservation.mask.__doc__ = "0/1 mask where 0 indicates an invalid action shape=[n,]"  # noqa
+MathyObservation.values.__doc__ = "tree node value sequences, with non number indices set to 0.0 shape=[n,]"  # noqa
+MathyObservation.type.__doc__ = "two column hash of problem environment type shape=[2,]"  # noqa
+MathyObservation.time.__doc__ = "float value between 0.0 and 1.0 indicating the time elapsed shape=[1,]"  # noqa
 # fmt: on
 
 
@@ -75,8 +75,8 @@ class MathyEnvStateStep(NamedTuple):
 
 
 # fmt: off
-MathyEnvStateStep.raw.__doc__ = "the input text at the timestep" # noqa
-MathyEnvStateStep.action.__doc__ = "a tuple indicating the chosen action and the node it was applied to" # noqa
+MathyEnvStateStep.raw.__doc__ = "the input text at the timestep"  # noqa
+MathyEnvStateStep.action.__doc__ = "a tuple indicating the chosen action and the node it was applied to"  # noqa
 # fmt: on
 
 
