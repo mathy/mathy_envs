@@ -1,3 +1,15 @@
+# [0.12.0](https://github.com/mathy/mathy_envs/compare/v0.11.5...v0.12.0) (2023-11-29)
+
+
+### Features
+
+* **gym:** update to gymnasium package ([ed1c5fe](https://github.com/mathy/mathy_envs/commit/ed1c5fe6683f62009eef1a6e8dd8e95918c26616))
+
+
+### BREAKING CHANGES
+
+* **gym:** this changes the output of Mathy gym envs to the 0.26 style API
+
 ## [0.11.5](https://github.com/mathy/mathy_envs/compare/v0.11.4...v0.11.5) (2023-11-29)
 
 
