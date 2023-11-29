@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 
 
 class MaskedDiscrete(spaces.Discrete):

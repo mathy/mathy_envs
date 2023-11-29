@@ -1,9 +1,9 @@
 try:
-    import gym  # noqa
+    import gymnasium  # noqa
 except ImportError:
     raise ImportError(
         """
-The "gym" library must be installed to use mathy_envs.gym submodule. Please try:
+The "gymnasium" library must be installed to use mathy_envs.gym submodule. Please try:
 
     pip install mathy_envs[gym]
 

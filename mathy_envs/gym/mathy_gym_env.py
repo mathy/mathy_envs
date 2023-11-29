@@ -1,10 +1,10 @@
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import error as gym_error
-from gym import spaces
-from gym.envs.registration import register
+from gymnasium import error as gym_error
+from gymnasium import spaces
+from gymnasium.envs.registration import register
 from mathy_core.rule import ExpressionChangeRule
 
 from ..env import MathyEnv

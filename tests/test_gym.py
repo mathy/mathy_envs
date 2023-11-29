@@ -10,17 +10,17 @@ from mathy_envs.state import MathyObservation
 
 
 def test_gym_raises_helpful_error_if_gym_is_not_installed():
-    with mock.patch.dict(sys.modules, {"gym": None}):
+    with mock.patch.dict(sys.modules, {"gymnasium": None}):
         with pytest.raises(ImportError, match=r"pip install mathy_envs\[gym\]"):
             import mathy_envs.gym  # noqa
 
 
 def test_gym_instantiate_envs():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MathyGymEnv
 
-    all_envs = gym.envs.registration.registry.all()  # type:ignore
+    all_envs = gym.registry.values()
     # Filter to just mathy registered envs
     mathy_gym_envs = [e for e in all_envs if e.id.startswith("mathy-")]
 
@@ -42,7 +42,7 @@ def test_gym_instantiate_envs():
 
 
 def test_gym_env_spaces():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MaskedDiscrete, MathyGymEnv
 
@@ -62,7 +62,7 @@ def test_gym_env_spaces():
 
 
 def test_gym_probability_action_mask():
-    import gym
+    import gymnasium as gym
 
     from mathy_envs.gym import MathyGymEnv
 
