@@ -1,3 +1,10 @@
+## [0.11.5](https://github.com/mathy/mathy_envs/compare/v0.11.4...v0.11.5) (2023-11-29)
+
+
+### Features
+
+* **ci:** add python build matrix / cron job ([#13](https://github.com/mathy/mathy_envs/issues/13)) ([a0e93c5](https://github.com/mathy/mathy_envs/commit/a0e93c567513456ad10578a91acacf08c601a770))
+
 ## [0.11.4](https://github.com/mathy/mathy_envs/compare/v0.11.3...v0.11.4) (2022-10-10)
 
 
