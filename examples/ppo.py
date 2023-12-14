@@ -8,7 +8,7 @@ import sys
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from pathlib import Path
 import gymnasium as gym
 import numpy as np
@@ -394,7 +394,7 @@ def train(config: PPOConfig, init_from: Optional[str] = None) -> None:
 
     max_ep_len = 1000  # max timesteps in one episode
     max_training_timesteps = int(
-        3e6
+        2e6
     )  # break training loop if timeteps > max_training_timesteps
 
     print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
@@ -765,9 +765,23 @@ def test(config: PPOConfig, checkpoint_path: str):
     )
 
 
+EnvTypes = Literal[
+    "poly",
+    "poly-blockers",
+    "poly-combine",
+    "poly-commute",
+    "poly-grouping",
+    "poly-like-terms-haystack",
+    "binomial",
+    "complex",
+]
+
 if __name__ == "__main__":
+    env_type: EnvTypes = "poly-commute"
+    env_difficulty: Literal["easy", "normal", "hard"] = "easy"
+    env_name = f"mathy-{env_type}-easy-v0"
     config = PPOConfig(
-        env_name="mathy-poly-easy-v0",
+        env_name=env_name,
         has_continuous_action_space=False,  # continuous action space; else discrete
         random_seed=0,  # set random seed if required (0 = no random seed)
         state_dim=0,
