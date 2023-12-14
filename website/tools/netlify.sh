@@ -20,4 +20,5 @@ if [ ! -d "${DIR}" ]; then
 fi
 
 echo "Installing/updating requirements..."
+.env/bin/pip install -r requirements.txt
 .env/bin/mkdocs build
