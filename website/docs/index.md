@@ -1,6 +1,9 @@
 # mathy_envs
 
 <p align="center">
+  <a href="/"><img mathy-logo src="/img/mathy_envs_logo.png" alt="Mathy Envs"></a>
+</p>
+<p align="center">
     <em>Develop agents that can complete Mathy's challenging algebra environments.</em>
 </p>
 <p align="center">
@@ -15,11 +18,9 @@
 </a>
 </p>
 
-
 Mathy includes a framework for building reinforcement learning environments that transform math expressions using a set of user-defined actions.
 
 Built-in environments aim to simplify algebra problems and expose generous customization points for user-created ones.
-
 
 - **Large Action Spaces**: Mathy environments have 2d action spaces, where you can apply any known rule to any node in the tree. Without masking this makes mathy environments very difficult to explore.
 - **Masked Action Support** To enable better curriculum learning and toy problem creation, mathy agents are given access to a mask of valid actions given the state of the system. When used to select actions, mathy environments become much easier to explore.
