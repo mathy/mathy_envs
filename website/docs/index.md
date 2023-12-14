@@ -1,5 +1,21 @@
 # mathy_envs
 
+<p align="center">
+    <em>Develop agents that can complete Mathy's challenging algebra environments.</em>
+</p>
+<p align="center">
+<a href="https://github.com/mathy/mathy_envs/actions">
+    <img src="https://github.com/mathy/mathy_envs/workflows/Build/badge.svg" />
+</a>
+<a href="https://codecov.io/gh/mathy/mathy_envs">
+    <img src="https://codecov.io/gh/mathy/mathy_envs/branch/master/graph/badge.svg?token=CqPEOdEMJX" />
+</a>
+<a href="https://pypi.org/project/mathy_envs" target="_blank">
+    <img src="https://badge.fury.io/py/mathy_envs.svg" alt="Package version">
+</a>
+</p>
+
+
 Mathy includes a framework for building reinforcement learning environments that transform math expressions using a set of user-defined actions.
 
 Built-in environments aim to simplify algebra problems and expose generous customization points for user-created ones.
