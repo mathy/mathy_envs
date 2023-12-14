@@ -4,8 +4,7 @@ set -e
 # Make the virtualenv only if the folder doesn't exist
 DIR=../../.env
 if [ ! -d "${DIR}" ]; then
-  echo "Root env is not found. Run setup.sh from the project root first."
-  exit 1
+  sh ../../tools/setup.sh
 fi
 
 # Use root env
