@@ -13,7 +13,7 @@ EXCLUDE_FILES = {
     "about.py",
     "conrastive.py",
 }
-INCLUDE_FOLDERS = ["", "envs"]
+INCLUDE_FOLDERS = [".", "envs"]
 DOCS_KEY = "API"
 
 # Paths
@@ -40,8 +40,9 @@ def prepend_md_content(original_md, prepending_md):
 
         # Change to
         ticks = "```"
-        new_content = f"# API\n\n{ticks}python\n\nimport {original_content[0][2:]}{ticks}\n\n"
-        print(f"New content: {new_content}")
+        new_content = (
+            f"# API\n\n{ticks}python\n\nimport {original_content[0][2:]}{ticks}\n\n"
+        )
         original_content[0] = new_content
         # flatten the list of lines into a single string
         original_content = "\n".join(original_content)
@@ -86,11 +87,20 @@ def process_directory(directory):
 
 def update_yaml_nav(nav_entries):
     mkdocs_yaml = yaml.load(yaml_path)
+    updated = False
     site_nav = mkdocs_yaml["nav"]
     for nav_obj in site_nav:
-        if DOCS_KEY in nav_obj:
-            nav_obj[DOCS_KEY] = nav_entries
-            break
+        site_keys = list(nav_obj.keys())
+        for key in site_keys:
+            if isinstance(nav_obj[key], str):
+                continue
+            for nav_sub in nav_obj[key]:
+                if DOCS_KEY in nav_sub:
+                    nav_sub[DOCS_KEY] = nav_entries
+                    updated = True
+                    break
+    if not updated:
+        raise Exception(f"Could not find {DOCS_KEY} in mkdocs.yml")
     with open(yaml_path, "w") as file:
         yaml.dump(mkdocs_yaml, file)
 
@@ -98,11 +108,16 @@ def update_yaml_nav(nav_entries):
 def main():
     print("Building API docs...")
     nav_entries = []
-    for folder in INCLUDE_FOLDERS:
-        folder = source_path / folder
+    for src_folder in INCLUDE_FOLDERS:
+        folder = source_path / src_folder
         if folder.is_dir():
             print(f"Found directory: {folder.relative_to(source_path)}")
-            nav_entries += process_directory(folder)
+            if src_folder not in [".", ""]:
+                new_entries = process_directory(folder)
+                new_entries.sort(key=lambda x: list(x)[0])
+                nav_entries.append({folder.name: new_entries})
+            else:
+                nav_entries += process_directory(folder)
     nav_entries.sort(key=lambda x: list(x)[0])
     update_yaml_nav(nav_entries)
     print("Done!")

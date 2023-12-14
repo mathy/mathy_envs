@@ -82,7 +82,7 @@ so that the reward signal can be problem-type dependent.
 MathyEnv.get_next_state(
     self, 
     env_state: mathy_envs.state.MathyEnvState, 
-    action: Union[int, Tuple[int, int]], 
+    action: Union[int, numpy.int64, Tuple[int, int]], 
 ) -> Tuple[mathy_envs.state.MathyEnvState, mathy_envs.time_step.TimeStep, mathy_core.rule.ExpressionChangeRule]
 ```
 
@@ -279,7 +279,10 @@ Convert an environment state into an observation that can be used
 by a training agent.
 ### to_action
 ```python
-MathyEnv.to_action(self, action: Union[int, Tuple[int, int]]) -> Tuple[int, int]
+MathyEnv.to_action(
+    self, 
+    action: Union[int, numpy.int64, Tuple[int, int]], 
+) -> Tuple[int, int]
 ```
 Resolve a given action input to a tuple of (rule_index, node_index).
 
