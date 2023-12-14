@@ -1,0 +1,97 @@
+# Project information
+site_name: Mathy Envs
+site_description: RL environments for manipulating math trees
+site_author: Justin DuJardin
+site_url: https://envs.mathy.ai
+
+# Copyright
+copyright: Copyright &copy; 2011 - 2023 Justin DuJardin
+
+repo_name: mathy/mathy_envs
+repo_url: https://github.com/mathy/mathy_envs
+edit_uri: edit/main/website/docs/
+
+google_analytics:
+- UA-8701293-12
+- auto
+
+nav:
+- Home: https://mathy.ai
+- Core: https://mathy.ai
+- Environments:
+  - Home: index.md
+  - Examples:
+          # - Like Terms Reformer: examples/like_terms_reformer.md
+    - Swarm Planning: examples/swarm.md
+        # - PyTorch Training : examples/pfrl_agent.md
+  - API:
+    - env: api/env.md
+    - envs:
+      - binomial_distribute: api/envs/binomial_distribute.md
+      - complex_simplify: api/envs/complex_simplify.md
+      - poly_combine_in_place: api/envs/poly_combine_in_place.md
+      - poly_commute_like_terms: api/envs/poly_commute_like_terms.md
+      - poly_grouping: api/envs/poly_grouping.md
+      - poly_haystack_like_terms: api/envs/poly_haystack_like_terms.md
+      - poly_simplify: api/envs/poly_simplify.md
+      - poly_simplify_blockers: api/envs/poly_simplify_blockers.md
+    - state: api/state.md
+    - time_step: api/time_step.md
+    - util: api/util.md
+  - Contributing: contributing.md
+  - About: about.md
+  - Releases: changelog.md
+  - License: license.md
+extra:
+  social:
+  - icon: fontawesome/brands/github-alt
+    link: https://github.com/justindujardin
+  - icon: fontawesome/brands/twitter
+    link: https://twitter.com/justindujardin
+  - icon: fontawesome/brands/linkedin
+    link: https://linkedin.com/in/justindujardin
+
+extra_css:
+- lib/styles.css
+
+extra_javascript:
+- lib/termynal.js
+
+theme:
+  name: material
+  icon:
+    logo: material/school
+  features:
+  - instant
+  - navigation.tabs
+  - navigation.tabs.sticky
+  favicon: img/favicon/favicon-16x16.png
+  palette:
+    primary: green
+    accent: lime
+  highlightjs: true
+  hljs_languages:
+  - python
+  - typescript
+  - json
+markdown_extensions:
+- markdown.extensions.codehilite:
+    guess_lang: false
+- toc:
+    permalink: true
+- markdown_include.include:
+    base_path: docs
+- admonition
+- codehilite
+- extra
+- pymdownx.superfences
+- pymdownx.details
+
+plugins:
+- mathy
+- search
+- social
+- git-revision-date-localized
+- git-committers
+- minify:
+    minify_html: true

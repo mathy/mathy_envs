@@ -1,0 +1,1 @@
+Mathy Envs is a library for working with math problems using reinforcement learning. The environments are highly customizable, and scale from toy problems to impossibly hard problems with giant action spaces.
