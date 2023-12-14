@@ -17,13 +17,12 @@ google_analytics:
 
 nav:
 - Home: https://mathy.ai
-- Core: https://mathy.ai
+- Core: https://core.mathy.ai
 - Environments:
   - Home: index.md
-  - Examples:
-          # - Like Terms Reformer: examples/like_terms_reformer.md
-    - Swarm Planning: examples/swarm.md
-        # - PyTorch Training : examples/pfrl_agent.md
+  - Features: features.md
+  # - Examples:
+  #   - Swarm Planning: examples/swarm.md
   - API:
     - env: api/env.md
     - envs:
@@ -38,8 +37,6 @@ nav:
     - state: api/state.md
     - time_step: api/time_step.md
     - util: api/util.md
-  - Contributing: contributing.md
-  - About: about.md
   - Releases: changelog.md
   - License: license.md
 extra:
@@ -60,7 +57,7 @@ extra_javascript:
 theme:
   name: material
   icon:
-    logo: material/school
+    logo: material/robot
   features:
   - instant
   - navigation.tabs

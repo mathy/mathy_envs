@@ -1,11 +1,3 @@
-## Overview
-
-Mathy uses a swarm planning algorithm to choose which [actions](/rules/overview) to apply to which nodes in an expression tree.
-
-It picks and takes actions in a loop to accomplish a [desired task](/envs/overview).
-
-Specifically, Mathy uses [Fragile](https://github.com/FragileTech/fragile){target=\_blank} swarm-planning to choose actions in built-in and user-defined [reinforcement learning environments](/envs/overview).
-
 ## Text Preprocessing
 
 Mathy processes an input problem by parsing its text into a tree, converting that into a sequence of features for each node in the tree, and concatenating those features with the current environment state, time, type, and valid action mask.
@@ -37,9 +29,9 @@ Rather than expose [tree structures](/api/core/expressions/#mathexpression) to e
 
 !!! info "tree list ordering"
 
-        You might have noticed that the previous tree features are not expressed in the natural order we might read. As observed by [Lample and Charton](https://arxiv.org/pdf/1912.01412.pdf){target=\_blank} trees must be visited in an order that preserves the order-of-operations so that the model can pick up on the hierarchical features of the input.
+    You might have noticed that the previous tree features are not expressed in the natural order we might read. As observed by [Lample and Charton](https://arxiv.org/pdf/1912.01412.pdf){target=\_blank} trees must be visited in an order that preserves the order-of-operations so that the model can pick up on the hierarchical features of the input.
 
-        For this reason, we visit trees in `pre` order for serialization.
+    For this reason, we visit trees in `pre` order for serialization.
 
 Converting math expression trees to lists is done with a helper:
 
