@@ -115,7 +115,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
         self,
         *,
         seed: Optional[int] = None,
-        options: Optional[dict[str, Any]] = None,
+        options: Optional[Dict[str, Any]] = None,
     ) -> Tuple[Any, Dict[Any, Any]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
