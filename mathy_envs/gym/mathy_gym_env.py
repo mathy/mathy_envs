@@ -114,8 +114,8 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
     def reset(
         self,
         *,
-        seed: int | None = None,
-        options: dict[str, Any] | None = None,
+        seed: Optional[int] = None,
+        options: Optional[dict[str, Any]] = None,
     ) -> Tuple[Any, Dict[Any, Any]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
