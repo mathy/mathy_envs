@@ -1,4 +1,7 @@
-# mathy_envs.state
+```python
+
+import mathy_envs.state
+```
 
 ## MathyAgentState
 ```python

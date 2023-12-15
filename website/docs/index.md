@@ -48,51 +48,6 @@ Mathy agents interact with environments through sequences of interactions called
         - take an **action** and update **state**
     3.  **done**
 
-## Extensions
-
-Because algebra problems represent only a tiny sliver of the uses for math expression trees, Mathy has customization points to alter or create entirely new environments with little effort.
-
-### New Problems
-
-Generating a new problem type while subclassing a base environment is the simplest way to create a custom challenge for the agent.
-
-You can inherit from a base environment like [Poly Simplify](/envs/poly_simplify), which has win-conditions that require all the like-terms to be gone from an expression and all complex terms to be simplified. From there, you can provide any valid input expression:
-
-```Python
-{!./snippets/envs/custom_problem_text.py!}
-```
-
-### New Actions
-
-Build your tree transformation actions and use them with the built-in agents:
-
-```Python
-{!./snippets/envs/custom_actions.py!}
-```
-
-### Custom Win Conditions
-
-Environments can implement custom logic for win conditions or inherit them from a base class:
-
-```Python
-{!./snippets/envs/custom_win_conditions.py!}
-```
-
-### Custom Timestep Rewards
-
-Specify which actions to give the agent positive and negative rewards:
-
-```Python
-{!./snippets/envs/custom_timestep_rewards.py!}
-```
-
-### Custom Episode Rewards
-
-Specify (or calculate) custom floating-point episode rewards:
-
-```Python
-{!./snippets/envs/custom_episode_rewards.py!}
-```
 
 ## Other Libraries
 
@@ -110,7 +65,7 @@ You can import the `mathy_envs.gym` module separately to register the environmen
 
 ## Contributors
 
-Mathy wouldn't be possible without the contributions of the following people:
+Mathy Envs wouldn't be possible without the contributions of the following people:
 
 <div class="contributors-wrapper">
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
@@ -119,7 +74,6 @@ Mathy wouldn't be possible without the contributions of the following people:
 <table>
   <tr>
     <td align="center"><a target="_blank" href="https://www.justindujardin.com/"><img src="https://avatars0.githubusercontent.com/u/101493?v=4" width="100px;" alt=""/><br /><sub><b>Justin DuJardin</b></sub></a></td>
-    <td align="center"><a target="_blank" href="https://twitter.com/Miau_DB"><img src="https://avatars3.githubusercontent.com/u/7149899?v=4" width="100px;" alt=""/><br /><sub><b>Guillem Duran Ballester</b></sub></a></td>
   </tr>
 </table>
 

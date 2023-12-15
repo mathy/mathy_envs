@@ -1,4 +1,7 @@
-# mathy_envs.envs.poly_commute_like_terms
+```python
+
+import mathy_envs.envs.poly_commute_like_terms
+```
 
 ## PolyCommuteLikeTerms
 ```python

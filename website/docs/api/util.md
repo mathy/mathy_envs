@@ -1,4 +1,7 @@
-# mathy_envs.util
+```python
+
+import mathy_envs.util
+```
 
 ## pad_array
 ```python
@@ -15,4 +18,3 @@ value (Any): a value to insert in order to pad the array to max length
 __Returns__
 
 `(List[Any])`: An array padded to `max_length` size
-

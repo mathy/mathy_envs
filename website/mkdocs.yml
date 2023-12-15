@@ -9,7 +9,7 @@ copyright: Copyright &copy; 2011 - 2023 Justin DuJardin
 
 repo_name: mathy/mathy_envs
 repo_url: https://github.com/mathy/mathy_envs
-edit_uri: edit/main/website/docs/
+edit_uri: edit/master/website/docs/
 
 google_analytics:
 - UA-8701293-12
@@ -20,9 +20,9 @@ nav:
 - Core: https://core.mathy.ai
 - Environments:
   - Home: index.md
-  - Features: features.md
-  # - Examples:
-  #   - Swarm Planning: examples/swarm.md
+  - Customization: customization.md
+  - Observations: observations.md
+  - Environments: api/envs/binomial_distribute.md
   - API:
     - env: api/env.md
     - envs:
@@ -62,6 +62,10 @@ theme:
   - instant
   - navigation.tabs
   - navigation.tabs.sticky
+  - navigation.footer
+  - content.action.edit
+  - content.action.view
+  - content.tooltips
   favicon: img/favicon/favicon-16x16.png
   palette:
     primary: green

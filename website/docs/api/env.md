@@ -1,4 +1,7 @@
-# mathy_envs.env
+```python
+
+import mathy_envs.env
+```
 
 ## MathyEnv
 ```python

@@ -1,4 +1,7 @@
-# mathy_envs.envs.poly_combine_in_place
+```python
+
+import mathy_envs.envs.poly_combine_in_place
+```
 
 ## PolyCombineInPlace
 ```python
@@ -22,5 +25,4 @@ to take two actions:
 
     1. distributive factor out the common element
     2. simplify the remaining constants
-
 

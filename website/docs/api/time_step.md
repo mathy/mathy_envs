@@ -1,4 +1,7 @@
-# mathy_envs.time_step
+```python
+
+import mathy_envs.time_step
+```
 TimeStep representing a step in the environment.
 
 This file is a mostly direct copy of the implementation from the

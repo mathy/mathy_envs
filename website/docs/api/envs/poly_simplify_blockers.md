@@ -1,4 +1,7 @@
-# mathy_envs.envs.poly_simplify_blockers
+```python
+
+import mathy_envs.envs.poly_simplify_blockers
+```
 
 ## PolySimplifyBlockers
 ```python
@@ -10,4 +13,3 @@ string of mismatched terms separating two like terms.
 The goal is to:
   1. Commute the like terms so they become siblings
   2. Combine the sibling like terms
-

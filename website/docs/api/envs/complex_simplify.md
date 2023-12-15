@@ -1,3 +1,7 @@
+```python
+
+import mathy_envs.envs.complex_simplify
+```
 Core to working with algebra problems is the ability to simplify complex terms. Mathy provides an environment that generates problems with complex terms that require simplification to satisfy the win conditions.
 
 ## Challenge
@@ -52,12 +56,8 @@ A trained agent learns to combine multiple low-level actions into higher-level o
 
 `mathy:40b^4 * a^8`
 
-# API
 
-```python
-
-import mathy_envs.envs.complex_simplify
-```
+## API
 
 
 ## ComplexSimplify

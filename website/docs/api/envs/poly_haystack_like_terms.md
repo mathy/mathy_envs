@@ -1,4 +1,7 @@
-# mathy_envs.envs.poly_haystack_like_terms
+```python
+
+import mathy_envs.envs.poly_haystack_like_terms
+```
 
 ## PolyHaystackLikeTerms
 ```python

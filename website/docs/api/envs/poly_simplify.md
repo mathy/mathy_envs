@@ -1,3 +1,7 @@
+```python
+
+import mathy_envs.envs.poly_simplify
+```
 Core to working with algebra problems is the ability to combine like terms in polynomials. Mathy provides an environment that generates problems that require simplification to satisfy the win conditions.
 
 ## Challenge
@@ -62,12 +66,8 @@ A trained agent learns to combine multiple low-level actions into higher-level o
 
 `mathy:12k + 210r + 17z`
 
-# API
 
-```python
-
-import mathy_envs.envs.poly_simplify
-```
+## API
 
 
 ## PolySimplify

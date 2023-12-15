@@ -1,3 +1,7 @@
+```python
+
+import mathy_envs.envs.binomial_distribute
+```
 A set of binomials is multiplied and must be simplified to satisfy the win conditions.
 
 ## Challenge
@@ -53,12 +57,8 @@ A trained agent learns to distribute and simplify binomial and monomial multipli
 
 `mathy:4k^4 + k^4 * h^2 + 28 + 7h^2`
 
-# API
 
-```python
-
-import mathy_envs.envs.binomial_distribute
-```
+## API
 
 
 ## BinomialDistribute

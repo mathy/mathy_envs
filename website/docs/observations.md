@@ -1,23 +1,27 @@
-## Text Preprocessing
+Mathy Env observations contain a rich set of features, and can optionally be normalized to the range 0-1.
 
-Mathy processes an input problem by parsing its text into a tree, converting that into a sequence of features for each node in the tree, and concatenating those features with the current environment state, time, type, and valid action mask.
+Let's quickly review how we go from AsciiMath text inputs to a set of feature for neural networks to consume:
+
+## Text -> Observation
+
+[Mathy Core](https://core.mathy.ai) processes an input problem by parsing its text into a tree, then mathy envs convert that into a sequence of nodes/values, and finally those features are concatenated with the current environment time, type, and valid action mask.
 
 ### Text to Tree
 
-A problem text is [encoded into tokens](/cas/tokenizer), then [parsed into a tree](/cas/parser) that preserves the order of operations while removing parentheses and whitespace.
+A problem text is [encoded into tokens](https://core.mathy.ai/api/tokenizer), then [parsed into a tree](https://core.mathy.ai/api/parser) that preserves the order of operations while removing parentheses and whitespace.
 Consider the tokens and tree that result from the input: `-3 * (4 + 7)`
 
 **Tokens**
 
 `tokens:-3 * (4 + 7)`
 
-** tree**
+**Tree**
 
 `mathy:-3 * (4 + 7)`
 
 Please observe that the tree representation is more concise than the tokens array because it doesn't have nodes for hierarchical features like parentheses.
 
-Converting text to trees is accomplished with the [expression parser](/cas/parser):
+Converting text to trees is accomplished with the [expression parser](https://core.mathy.ai/api/parser):
 
 ```python
 {!./snippets/envs/text_to_tree.py!}
@@ -25,7 +29,7 @@ Converting text to trees is accomplished with the [expression parser](/cas/parse
 
 ### Tree to List
 
-Rather than expose [tree structures](/api/core/expressions/#mathexpression) to environments, we [traverse them](/api/core/expressions/#to_list) to produce node/value lists.
+Rather than expose [tree structures](https://core.mathy.ai/api/expressions/#mathexpression) to environments, we [traverse them](https://core.mathy.ai/api/expressions/#to_list) to produce node/value lists.
 
 !!! info "tree list ordering"
 
