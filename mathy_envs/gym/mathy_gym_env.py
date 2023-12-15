@@ -6,6 +6,7 @@ from gymnasium import error as gym_error
 from gymnasium import spaces
 from gymnasium.envs.registration import register
 from mathy_core.rule import ExpressionChangeRule
+from numpy.typing import NDArray
 
 from ..env import MathyEnv
 from ..state import MathyEnvState
@@ -14,7 +15,7 @@ from ..types import ActionType, MathyEnvProblemArgs
 from .masked_discrete import MaskedDiscrete
 
 
-class MathyGymEnv(gym.Env):
+class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
     """A small wrapper around Mathy envs to allow them to work with OpenAI Gym. The
     agents currently use this env wrapper, but it could be dropped in the future."""
 
@@ -49,7 +50,7 @@ class MathyGymEnv(gym.Env):
         else:
             self._challenge, _ = self.mathy.get_initial_state(env_problem_args)
 
-        self.action_space = MaskedDiscrete(
+        self.action_space = MaskedDiscrete(  # type:ignore
             self.action_size, np.array([1] * self.action_size)
         )
         mask = len(self.mathy.rules) * self.mathy.max_seq_len
@@ -112,9 +113,9 @@ class MathyGymEnv(gym.Env):
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        return_info: bool = False,
-        options: Optional[Dict[Any, Any]] = None,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
     ) -> Tuple[Any, Dict[Any, Any]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)

@@ -6,3 +6,4 @@ flake8
 isort
 autoflake
 mock
+gymnasium # for tests
