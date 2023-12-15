@@ -61,80 +61,41 @@ import mathy_envs.envs.binomial_distribute
 ```
 
 
-
-
 ## BinomialDistribute
-
 ```python
-
 BinomialDistribute(
-
     self, 
-
     rules: Optional[List[mathy_core.rule.BaseRule]] = None, 
-
     max_moves: int = 20, 
-
     verbose: bool = False, 
-
     invalid_action_response: Literal['raise', 'penalize', 'terminal'] = 'raise', 
-
     reward_discount: float = 0.99, 
-
     max_seq_len: int = 128, 
-
     previous_state_penalty: bool = True, 
-
     preferred_term_commute: bool = False, 
-
 )
-
 ```
-
 A Mathy environment for distributing pairs of binomials.
 
-
-
 The FOIL method is sometimes used to solve these types of problems, where
-
 FOIL is just the distributive property applied to two binomials connected
-
 with a multiplication.
-
 ### problem_fn
-
 ```python
-
 BinomialDistribute.problem_fn(
-
     self, 
-
     params: mathy_envs.types.MathyEnvProblemArgs, 
-
 ) -> mathy_envs.types.MathyEnvProblem
-
 ```
-
 Given a set of parameters to control term generation, produce
-
 2 binomials expressions connected by a multiplication.
-
 ### transition_fn
-
 ```python
-
 BinomialDistribute.transition_fn(
-
     self, 
-
     env_state: mathy_envs.state.MathyEnvState, 
-
     expression: mathy_core.expressions.MathExpression, 
-
     features: mathy_envs.state.MathyObservation, 
-
 ) -> Optional[mathy_envs.time_step.TimeStep]
-
 ```
-
 If there are no like terms.

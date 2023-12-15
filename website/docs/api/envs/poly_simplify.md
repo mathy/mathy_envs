@@ -70,72 +70,37 @@ import mathy_envs.envs.poly_simplify
 ```
 
 
-
-
 ## PolySimplify
-
 ```python
-
 PolySimplify(self, ops: Optional[List[str]] = None, kwargs: Any)
-
 ```
-
 A Mathy environment for simplifying polynomial expressions.
 
-
-
 NOTE: This environment only generates polynomial problems with
-
  addition operations. Subtraction, Multiplication and Division
-
  operators are excluded. This is a good area for improvement.
 
-
-
 ### problem_fn
-
 ```python
-
 PolySimplify.problem_fn(
-
     self, 
-
     params: mathy_envs.types.MathyEnvProblemArgs, 
-
 ) -> mathy_envs.types.MathyEnvProblem
-
 ```
-
 Given a set of parameters to control term generation, produce
-
 a polynomial problem with (n) total terms divided among (m) groups
-
 of like terms. A few examples of the form: `f(n, m) = p`
-
 - (3, 1) = "4x + 2x + 6x"
-
 - (6, 4) = "4x + v^3 + y + 5z + 12v^3 + x"
-
 - (4, 2) = "3x^3 + 2z + 12x^3 + 7z"
 
-
-
 ### transition_fn
-
 ```python
-
 PolySimplify.transition_fn(
-
     self, 
-
     env_state: mathy_envs.state.MathyEnvState, 
-
     expression: mathy_core.expressions.MathExpression, 
-
     features: mathy_envs.state.MathyObservation, 
-
 ) -> Optional[mathy_envs.time_step.TimeStep]
-
 ```
-
 If there are no like terms.

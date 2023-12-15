@@ -57,7 +57,7 @@ extra_javascript:
 theme:
   name: material
   icon:
-    logo: material/robot
+    logo: material/image
   features:
   - instant
   - navigation.tabs
