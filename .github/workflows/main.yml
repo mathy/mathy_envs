@@ -50,6 +50,8 @@ jobs:
         run: sh tools/setup.sh
       - name: Build Packages
         run: sh tools/build.sh
+      - name: Update API Docs
+        run: sh tools/docs.sh
       - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
