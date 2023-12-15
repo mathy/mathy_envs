@@ -1,10 +1,11 @@
-# [0.12.0](https://github.com/mathy/mathy_envs/compare/v0.11.5...v0.12.0) (2023-11-29)
+
+## [0.12.0](https://github.com/mathy/mathy_envs/compare/v0.11.5...v0.12.0) (2023-11-29)
 
 ### Features
 
 - **gym:** update to gymnasium package ([ed1c5fe](https://github.com/mathy/mathy_envs/commit/ed1c5fe6683f62009eef1a6e8dd8e95918c26616))
 
-### BREAKING CHANGES
+**BREAKING CHANGES**
 
 - **gym:** this changes the output of Mathy gym envs to the 0.26 style API
 
@@ -58,7 +59,7 @@
 
 - **gym:** environments return np.ndarray observations only ([e441dfc](https://github.com/mathy/mathy_envs/commit/e441dfccfea7011551efb3514ea468716e097255))
 
-### BREAKING CHANGES
+**BREAKING CHANGES**
 
 - drop MathyWindowObservation and observations_to_window helpers for working with windowed observations. They were only used in the legacy custom mathy agents.
 - **gym:** this remove the "np_observation" flag from MathyGymEnv. All returned obseravtions are np.ndarrays now.
@@ -70,7 +71,7 @@
 
 - **state:** normalize problem type hash in observation ([97b26b5](https://github.com/mathy/mathy_envs/commit/97b26b5df7dc579fb045fcb5e359a7b1812531f6))
 
-### BREAKING CHANGES
+**BREAKING CHANGES**
 
 - **state:** observation size is 2 floating point values more than before. In order to normalize problem type, we need more than two options or the normalized value will be likely to be 0.0 and 1.0 in some order. By adding two more variations on the input, we get a range of 4 values with at least 2 usually being not 1.0 or 0.0
 
