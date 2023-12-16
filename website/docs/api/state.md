@@ -117,3 +117,18 @@ float value between 0.0 and 1.0 indicating the time elapsed shape=[1,]
 two column hash of problem environment type shape=[2,]
 ### values
 tree node value sequences, with non number indices set to 0.0 shape=[n,]
+## ObservationFeatureIndices
+```python
+ObservationFeatureIndices(self, args, kwargs)
+```
+An enumeration.
+### mask
+An enumeration.
+### nodes
+An enumeration.
+### time
+An enumeration.
+### type
+An enumeration.
+### values
+An enumeration.
