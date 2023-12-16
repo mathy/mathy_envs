@@ -362,7 +362,8 @@ class MathyEnv:
         print(
             self.render_state(
                 env_state, action_name, token_index, change, change_reward, pretty
-            )
+            ),
+            flush=True,
         )
 
     def is_terminal_state(self, env_state: MathyEnvState) -> bool:

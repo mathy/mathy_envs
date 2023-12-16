@@ -63,7 +63,7 @@
       [
         "@semantic-release/changelog",
         {
-          "changelogFile": "CHANGELOG.md"
+          "changelogFile": "website/docs/changelog.md"
         }
       ],
       [
@@ -71,6 +71,8 @@
         {
           "assets": [
             "mathy_envs/about.py",
+            "website/docs/api/*.md",
+            "website/docs/api/**/*.md",
             "CHANGELOG.md",
             "package.json"
           ],

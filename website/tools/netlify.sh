@@ -19,7 +19,6 @@ if [ ! -d "${DIR}" ]; then
   $PYTHON_PATH -m virtualenv .env -p $PYTHON_PATH || virtualenv .env -p $PYTHON_PATH
 fi
 
-. .env/bin/activate
 echo "Installing/updating requirements..."
-pip install -e .[all]
-pip install -r requirements-dev.txt
+.env/bin/pip install -r requirements.txt
+.env/bin/mkdocs build
