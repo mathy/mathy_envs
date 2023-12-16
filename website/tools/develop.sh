@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-../../.env/bin/mkdocs serve
+../.env/bin/mkdocs serve
