@@ -586,7 +586,8 @@ def train(config: PPOConfig, init_from: Optional[str] = None) -> None:
     print(f"Started training at (GMT) : {start_time}")
 
     print(
-        "============================================================================================"
+        "============================================================================================",
+        flush=True,
     )
 
     # logging file
@@ -654,7 +655,8 @@ def train(config: PPOConfig, init_from: Optional[str] = None) -> None:
                 print_avg_reward = round(print_avg_reward, 2)
 
                 print(
-                    f"Episode : {i_episode} \t\t Timestep : {time_step} \t\t Average Reward : {print_avg_reward}"
+                    f"Episode : {i_episode} \t\t Timestep : {time_step} \t\t Average Reward : {print_avg_reward}",
+                    flush=True,
                 )
 
                 print_running_reward = 0
@@ -672,7 +674,8 @@ def train(config: PPOConfig, init_from: Optional[str] = None) -> None:
                     f"Elapsed Time  : {datetime.now().replace(microsecond=0) - start_time}"
                 )
                 print(
-                    "--------------------------------------------------------------------------------------------"
+                    "--------------------------------------------------------------------------------------------",
+                    flush=True,
                 )
 
             # break; if the episode is over
@@ -714,7 +717,6 @@ def test(config: PPOConfig, checkpoint_path: str):
     ]
     assert len(envs) > 0, "No environments found"
     env = envs[0]
-    
 
     # state space dimension
     state_dim = env.observation_space.shape[0]
