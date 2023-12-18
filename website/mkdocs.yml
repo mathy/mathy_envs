@@ -22,23 +22,23 @@ nav:
   - Home: index.md
   - Customization: customization.md
   - Observations: observations.md
-  - Environments: api/envs/binomial_distribute.md
   - API:
-    - env: api/env.md
-    - envs:
-      - binomial_distribute: api/envs/binomial_distribute.md
-      - complex_simplify: api/envs/complex_simplify.md
-      - poly_combine_in_place: api/envs/poly_combine_in_place.md
-      - poly_commute_like_terms: api/envs/poly_commute_like_terms.md
-      - poly_grouping: api/envs/poly_grouping.md
-      - poly_haystack_like_terms: api/envs/poly_haystack_like_terms.md
-      - poly_simplify: api/envs/poly_simplify.md
-      - poly_simplify_blockers: api/envs/poly_simplify_blockers.md
-    - state: api/state.md
-    - time_step: api/time_step.md
-    - util: api/util.md
-  - Releases: changelog.md
-  - License: license.md
+    - Env: api/env.md
+    - Envs:
+      - Binomial Distribute: api/envs/binomial_distribute.md
+      - Complex Simplify: api/envs/complex_simplify.md
+      - Poly Combine In Place: api/envs/poly_combine_in_place.md
+      - Poly Commute Like Terms: api/envs/poly_commute_like_terms.md
+      - Poly Grouping: api/envs/poly_grouping.md
+      - Poly Haystack Like Terms: api/envs/poly_haystack_like_terms.md
+      - Poly Simplify: api/envs/poly_simplify.md
+      - Poly Simplify Blockers: api/envs/poly_simplify_blockers.md
+    - State: api/state.md
+    - Time Step: api/time_step.md
+    - Util: api/util.md
+  - Misc:
+    - Releases: changelog.md
+    - License: license.md
 extra:
   social:
   - icon: fontawesome/brands/github-alt
@@ -61,8 +61,10 @@ theme:
   features:
   - instant
   - navigation.tabs
+  - navigation.sections
   - navigation.tabs.sticky
   - navigation.footer
+  - navigation.top
   - content.action.edit
   - content.action.view
   - content.tooltips
