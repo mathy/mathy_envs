@@ -2,4 +2,4 @@ numpy
 colr
 wasabi
 mathy_core>=0.8.6
-gym<0.26.0
+gymnasium
