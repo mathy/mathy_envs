@@ -394,7 +394,7 @@ def train(config: PPOConfig, init_from: Optional[str] = None) -> None:
 
     max_ep_len = 1000  # max timesteps in one episode
     max_training_timesteps = int(
-        5e6
+        50e6
     )  # break training loop if timeteps > max_training_timesteps
 
     print_freq = max_ep_len * 10  # print avg reward in the interval (in num timesteps)
@@ -799,14 +799,14 @@ if __name__ == "__main__":
     env_names = [
         f"mathy-{t}-{env_difficulty}-v0"
         for t in [
-            # "poly",
-            # "poly-blockers",
+            "poly",
+            "poly-blockers",
             "poly-combine",
-            # "poly-commute",
-            # "poly-grouping",
-            # "poly-like-terms-haystack",
-            # "binomial",
-            # "complex",
+            "poly-commute",
+            "poly-grouping",
+            "poly-like-terms-haystack",
+            "binomial",
+            "complex",
         ]
     ]
     config = PPOConfig(
