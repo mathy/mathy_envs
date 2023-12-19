@@ -61,6 +61,7 @@ theme:
   features:
   - instant
   - navigation.tabs
+  - navigation.expand
   - navigation.sections
   - navigation.tabs.sticky
   - navigation.footer
