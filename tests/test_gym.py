@@ -42,6 +42,32 @@ def test_gym_instantiate_envs():
         assert observation is not None
 
 
+def test_gym_step_info():
+    import gymnasium as gym
+
+    from mathy_envs.gym import MathyGymEnv
+
+    all_envs = gym.registry.values()
+    # Filter to just mathy registered envs
+    mathy_gym_envs = [e for e in all_envs if e.id.startswith("mathy-")]
+
+    assert len(mathy_gym_envs) > 0
+
+    # Each env can be created and produce an initial observation without
+    # special configuration.
+    for gym_env_spec in mathy_gym_envs:
+        print(f"Testing {gym_env_spec.id}...")
+        wrapper_env: MathyGymEnv = gym.make(gym_env_spec.id)  # type:ignore
+        assert wrapper_env is not None
+
+        obs = wrapper_env.reset()
+        print("initial observation:", obs)
+        action = wrapper_env.action_space.sample()
+        obs, reward, terminated, truncated, info = wrapper_env.step(action)
+        for key in ["valid", "done", "truncated", "transition"]:
+            assert key in info, f"info should have a string key {key}"
+
+
 def test_gym_env_spaces():
     import gymnasium as gym
 

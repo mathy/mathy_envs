@@ -83,7 +83,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
         if terminated or truncated:
             info["win"] = transition.reward > 0.0
 
-        obs, info = self._observe(self.state)
+        obs, _ = self._observe(self.state)
         return obs, transition.reward, terminated, truncated, info
 
     def _observe(self, state: MathyEnvState) -> Tuple[np.ndarray, dict]:
