@@ -72,6 +72,8 @@ theme:
   favicon: img/favicon/favicon-16x16.png
   palette:
     - media: "(prefers-color-scheme)"
+      primary: green
+      accent: lime
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
