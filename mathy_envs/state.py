@@ -193,13 +193,14 @@ class MathyEnvState(object):
             # The adler32 crc is used in zip files and is determinstic
             # across runs while also being fast to calculate. It is NOT
             # cryptographically secure.
-            hashes = np.asfarray(
+            hashes = np.asarray(
                 [
                     adler32(type_str.encode(encoding="utf-8")),
                     adler32(type_str[::-1].encode(encoding="utf-8")),
                     adler32(type_str.upper().encode(encoding="utf-8")),
                     adler32(type_str.replace(".", "").encode(encoding="utf-8")),
-                ]
+                ],
+                dtype=np.float32,
             )
             if hashes.sum() != 0.0:
                 hashes = (hashes - min(hashes)) / (max(hashes) - min(hashes))
@@ -240,11 +241,11 @@ class MathyEnvState(object):
         # The "types" and "values" can be normalized 0-1
         if normalize is True:
             # https://bit.ly/3irAalH
-            x = np.asfarray(values)
+            x = np.asarray(values, dtype=np.float32)
             if x.sum() != 0.0:
                 x = (x - min(x)) / (max(x) - min(x) + 1e-32)
             values = x.tolist()
-            x = np.asfarray(vectors)
+            x = np.asarray(vectors, dtype=np.float32)
             if x.sum() != 0.0:
                 x = (x - min(x)) / (max(x) - min(x) + 1e-32)
             vectors = x.tolist()
