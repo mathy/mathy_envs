@@ -78,6 +78,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
             "transition": transition,
             "done": terminated,
             "truncated": truncated,
+            "change": change,
             "valid": change.result is not None,
         }
         if terminated or truncated:
