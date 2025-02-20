@@ -2,7 +2,7 @@
 set -e
 
 # Default Python path
-PYTHON_PATH="python"
+PYTHON_PATH="python3"
 
 # Check if a custom Python path is provided as the first argument
 if [ -n "$1" ]; then
