@@ -73,7 +73,7 @@ def test_gym_env_spaces():
 
     from mathy_envs.gym import MaskedDiscrete, MathyGymEnv
 
-    wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0")  # type:ignore
+    wrapper_env: MathyGymEnv = gym.make("mathy-poly-easy-v0").unwrapped  # type:ignore
     mathy: MathyEnv = wrapper_env.mathy
     observation, info = wrapper_env.reset()
 
@@ -97,7 +97,7 @@ def test_gym_probability_action_mask():
         "mathy-poly-easy-v0", mask_as_probabilities=True
     )  # type:ignore
     obs, info = env.reset()
-    offset = -env.mathy.action_size
+    offset = -env.unwrapped.mathy.action_size
     action_mask = np.array(obs[offset:])
     # When returned as probabilities, the mask sums to almost 1.0
     assert np.sum(action_mask) > 1.0 - 1e-4
