@@ -193,7 +193,7 @@ class MathyEnvState(object):
             # The adler32 crc is used in zip files and is determinstic
             # across runs while also being fast to calculate. It is NOT
             # cryptographically secure.
-            hashes = np.asarray(
+            hashes: Any = np.asarray(  # type:ignore
                 [
                     adler32(type_str.encode(encoding="utf-8")),
                     adler32(type_str[::-1].encode(encoding="utf-8")),
@@ -228,7 +228,7 @@ class MathyEnvState(object):
         vectors: NodeIntList = []
         values: NodeValuesFloatList = []
         if move_mask is None:
-            move_mask = np.zeros(len(nodes)).tolist()
+            move_mask = np.zeros(len(nodes)).tolist()  # type:ignore
         assert move_mask is not None
         for node in nodes:
             vectors.append(node.type_id)
@@ -241,7 +241,7 @@ class MathyEnvState(object):
         # The "types" and "values" can be normalized 0-1
         if normalize is True:
             # https://bit.ly/3irAalH
-            x = np.asarray(values, dtype=np.float32)
+            x: Any = np.asarray(values, dtype=np.float32)
             if x.sum() != 0.0:
                 x = (x - min(x)) / (max(x) - min(x) + 1e-32)
             values = x.tolist()
@@ -315,7 +315,7 @@ class MathyEnvState(object):
     @classmethod
     def from_np(cls, input_bytes: np.ndarray) -> "MathyEnvState":
         """Convert a numpy object into a state object"""
-        input_string = "".join([chr(o) for o in input_bytes.tolist()])
+        input_string = "".join([chr(int(o)) for o in input_bytes.tolist()])
         state = cls.from_string(input_string)
         return state
 
