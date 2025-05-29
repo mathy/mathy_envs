@@ -275,19 +275,11 @@ class MathyEnvState(object):
             )
         elif obs_type == ObservationType.HIERARCHICAL:
             return self.to_hierarchical_observation(
-                move_mask=move_mask,
-                hash_type=hash_type,
                 parser=parser,
-                normalize=normalize,
-                max_seq_len=max_seq_len,
             )
         elif obs_type == ObservationType.MESSAGE_PASSING:
             return self.to_message_passing_observation(
-                move_mask=move_mask,
-                hash_type=hash_type,
                 parser=parser,
-                normalize=normalize,
-                max_seq_len=max_seq_len,
             )
         else:
             raise ValueError(f"Unknown observation type: {obs_type}")
@@ -299,7 +291,7 @@ class MathyEnvState(object):
         parser: Optional[ExpressionParser] = None,
         normalize: bool = True,
         max_seq_len: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> MathyGraphObservation:
         """Convert a state into a graph observation for predictive coding"""
         if parser is None:
             parser = ExpressionParser()
@@ -346,19 +338,19 @@ class MathyEnvState(object):
                     max(node_types) - min(node_types) + 1e-32
                 )
 
-        return {
-            "node_features": np.column_stack([node_types, node_values]),
-            "adjacency": adjacency,
-            "mask": move_mask or np.zeros(n).tolist(),
-            "type": hash_type,
-            "time": [
+        return MathyGraphObservation(
+            node_features=np.column_stack([node_types, node_values]),
+            adjacency=adjacency,
+            mask=move_mask or np.zeros(n).tolist(),
+            type=hash_type,
+            time=[
                 int((self.max_moves - self.agent.moves_remaining) / self.max_moves * 10)
             ],
-        }
+        )
 
     def to_message_passing_observation(
         self, parser: Optional[ExpressionParser] = None
-    ) -> Dict[str, Any]:
+    ) -> MathyMessagePassingObservation:
         """Format for graph neural networks with explicit edge types"""
         if parser is None:
             parser = ExpressionParser()
@@ -395,14 +387,13 @@ class MathyEnvState(object):
                 edges.append([i, right_idx])
                 edge_types.append(1)  # 1 = right edge
 
-        return {
-            "node_features": np.array(node_features),
-            "edge_index": (
-                np.array(edges).T if edges else np.empty((2, 0))
-            ),  # PyG format
-            "edge_types": np.array(edge_types),
-            "num_nodes": len(nodes),
-        }
+        # Return namedtuple with node features and edge information
+        return MathyMessagePassingObservation(
+            node_features=np.array(node_features),
+            edge_index=(np.array(edges).T if edges else np.empty((2, 0))),  # PyG format
+            edge_types=np.array(edge_types),
+            num_nodes=len(nodes),
+        )
 
     def to_flat_observation(
         self,
@@ -462,7 +453,7 @@ class MathyEnvState(object):
 
     def to_hierarchical_observation(
         self, parser: Optional[ExpressionParser] = None
-    ) -> Dict[str, Any]:
+    ) -> MathyHierarchicalObservation:
         """Group nodes by tree depth for hierarchical predictive coding"""
         if parser is None:
             parser = ExpressionParser()
@@ -521,11 +512,11 @@ class MathyEnvState(object):
                 "parent_connections": parent_connections,
             }
 
-        return {
-            "levels": level_data,
-            "max_depth": max(levels.keys()) if levels else 0,
-            "root_level": 0,
-        }
+        return MathyHierarchicalObservation(
+            levels=level_data,
+            max_depth=max(levels.keys()) if levels else 0,
+            root_level=0,
+        )
 
     @classmethod
     def from_string(cls, input_string: str) -> "MathyEnvState":
