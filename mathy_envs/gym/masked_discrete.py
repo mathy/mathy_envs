@@ -12,7 +12,7 @@ class MaskedDiscrete(spaces.Discrete):
 
     def update_mask(self, mask: np.ndarray) -> None:
         assert isinstance(mask, (tuple, list, np.ndarray))
-        assert len(mask) == self.n
+        assert len(mask) == self.n, f"Mask length {len(mask)} does not match space size {self.n}."
         self.mask = np.array(mask)
 
     def __init__(self, n: int, mask: np.ndarray):
