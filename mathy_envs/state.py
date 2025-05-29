@@ -74,8 +74,8 @@ MathyObservation.time.__doc__ = "float value between 0.0 and 1.0 indicating the 
 
 
 class MathyGraphObservation(NamedTuple):
-    node_features: np.ndarray
-    adjacency: np.ndarray
+    node_features: np.ndarray[Any, np.dtype[np.float32]]
+    adjacency: np.ndarray[Any, np.dtype[np.float32]]
     mask: NodeMaskIntList
     type: ProblemTypeIntList
     time: TimeFloatList
@@ -88,9 +88,9 @@ class MathyHierarchicalObservation(NamedTuple):
 
 
 class MathyMessagePassingObservation(NamedTuple):
-    node_features: np.ndarray
-    edge_index: np.ndarray
-    edge_types: np.ndarray
+    node_features: np.ndarray[Any, np.dtype[np.float32]]
+    edge_index: np.ndarray[Any, np.dtype[np.int64]]
+    edge_types: np.ndarray[Any, np.dtype[np.int64]]
     num_nodes: int
 
 
