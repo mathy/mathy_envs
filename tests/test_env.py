@@ -167,7 +167,7 @@ def test_mathy_env_can_timestep_loop():
         env_state, value, changed = env.get_next_state(
             env_state, (rule_indices[0], node_indices[0])
         )
-    assert env_state.to_observation([]) is not None
+    assert env_state.to_observation([[],[]]) is not None
 
 
 def test_mathy_env_invalid_action_behaviors():
@@ -184,7 +184,7 @@ def test_mathy_env_invalid_action_behaviors():
         env_state, value, changed = env.get_next_state(
             env_state, (rule_indices[0], node_indices[0])
         )
-    assert env_state.to_observation([]) is not None
+    assert env_state.to_observation([[],[]]) is not None
 
 
 def test_mathy_env_preferred_term_commute():
