@@ -12,6 +12,36 @@ def test_state_to_observation():
     assert env_state.to_observation() is not None
 
 
+def test_state_to_hierarchical_graph():
+    """to_hierarchical_observation returns a hierarchical representation of the problem"""
+    env_state = MathyEnvState(problem="4x+2")
+    obs = env_state.to_hierarchical_observation()
+    assert obs["levels"] is not None
+    assert obs["max_depth"] is not None
+    assert obs["root_level"] is not None
+
+
+def test_state_to_graph_observation():
+    """to_graph_observation returns a graph representation of the problem"""
+    env_state = MathyEnvState(problem="4x+2")
+    obs = env_state.to_graph_observation()
+    assert obs["mask"] is not None
+    assert obs["adjacency"] is not None
+    assert obs["node_features"] is not None
+    assert obs["type"] is not None
+    assert obs["time"] is not None
+
+
+def test_state_to_message_passing_graph():
+    """to_message_passing_observation returns a message-passing graph representation of the problem"""
+    env_state = MathyEnvState(problem="4x+2")
+    obs = env_state.to_message_passing_observation()
+    assert obs["node_features"] is not None
+    assert obs["edge_index"] is not None
+    assert obs["edge_types"] is not None
+    assert obs["num_nodes"] is not None
+
+
 def test_state_to_observation_normalization():
     """normalize argument converts all values to range 0.0-1.0"""
     env_state = MathyEnvState(problem="4+2")

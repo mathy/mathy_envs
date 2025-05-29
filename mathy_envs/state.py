@@ -1,5 +1,5 @@
-from enum import IntEnum
-from typing import Any, Dict, List, NamedTuple, Optional
+from enum import Enum, IntEnum
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 from zlib import adler32
 
 import numpy as np
@@ -27,6 +27,13 @@ WindowTimeFloatList = List[TimeFloatList]
 
 # Input type for mathy models
 MathyInputsType = Dict[str, Any]
+
+
+class ObservationType(Enum):
+    FLAT = "flat"
+    GRAPH = "graph"
+    HIERARCHICAL = "hierarchical"
+    MESSAGE_PASSING = "message_passing"
 
 
 class ObservationFeatureIndices(IntEnum):
@@ -64,6 +71,36 @@ MathyObservation.values.__doc__ = "tree node value sequences, with non number in
 MathyObservation.type.__doc__ = "two column hash of problem environment type shape=[2,]"  # noqa
 MathyObservation.time.__doc__ = "float value between 0.0 and 1.0 indicating the time elapsed shape=[1,]"  # noqa
 # fmt: on
+
+
+class MathyGraphObservation(NamedTuple):
+    node_features: np.ndarray
+    adjacency: np.ndarray
+    mask: NodeMaskIntList
+    type: ProblemTypeIntList
+    time: TimeFloatList
+
+
+class MathyHierarchicalObservation(NamedTuple):
+    levels: Dict[int, Dict[str, Any]]
+    max_depth: int
+    root_level: int
+
+
+class MathyMessagePassingObservation(NamedTuple):
+    node_features: np.ndarray
+    edge_index: np.ndarray
+    edge_types: np.ndarray
+    num_nodes: int
+
+
+# Union type for all observation types
+MathyObservationUnion = Union[
+    MathyObservation,
+    MathyGraphObservation,
+    MathyHierarchicalObservation,
+    MathyMessagePassingObservation,
+]
 
 
 class MathyEnvStateStep(NamedTuple):
@@ -217,6 +254,163 @@ class MathyEnvState(object):
         parser: Optional[ExpressionParser] = None,
         normalize: bool = True,
         max_seq_len: Optional[int] = None,
+        obs_type: ObservationType = ObservationType.FLAT,
+    ) -> MathyObservationUnion:
+        """Unified observation method that returns the appropriate type"""
+        if obs_type == ObservationType.FLAT:
+            return self.to_flat_observation(
+                move_mask=move_mask,
+                hash_type=hash_type,
+                parser=parser,
+                normalize=normalize,
+                max_seq_len=max_seq_len,
+            )
+        elif obs_type == ObservationType.GRAPH:
+            return self.to_graph_observation(
+                move_mask=move_mask,
+                hash_type=hash_type,
+                parser=parser,
+                normalize=normalize,
+                max_seq_len=max_seq_len,
+            )
+        elif obs_type == ObservationType.HIERARCHICAL:
+            return self.to_hierarchical_observation(
+                move_mask=move_mask,
+                hash_type=hash_type,
+                parser=parser,
+                normalize=normalize,
+                max_seq_len=max_seq_len,
+            )
+        elif obs_type == ObservationType.MESSAGE_PASSING:
+            return self.to_message_passing_observation(
+                move_mask=move_mask,
+                hash_type=hash_type,
+                parser=parser,
+                normalize=normalize,
+                max_seq_len=max_seq_len,
+            )
+        else:
+            raise ValueError(f"Unknown observation type: {obs_type}")
+
+    def to_graph_observation(
+        self,
+        move_mask: Optional[NodeMaskIntList] = None,
+        hash_type: Optional[ProblemTypeIntList] = None,
+        parser: Optional[ExpressionParser] = None,
+        normalize: bool = True,
+        max_seq_len: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Convert a state into a graph observation for predictive coding"""
+        if parser is None:
+            parser = ExpressionParser()
+        if hash_type is None:
+            hash_type = self.get_problem_hash()
+
+        expression = parser.parse(self.agent.problem)
+        nodes: List[MathExpression] = expression.to_list()
+        n = len(nodes)
+
+        # Node features (your existing logic)
+        node_types = []
+        node_values = []
+
+        for node in nodes:
+            node_types.append(node.type_id)
+            if isinstance(node, ConstantExpression):
+                node_values.append(float(node.value) if node.value else 0.0)
+            else:
+                node_values.append(0.0)
+
+        # Create adjacency matrix using the tree structure
+        adjacency = np.zeros((n, n), dtype=np.float32)
+        node_to_idx = {id(node): i for i, node in enumerate(nodes)}
+
+        for i, node in enumerate(nodes):
+            # Parent -> child edges (top-down prediction)
+            if node.left and id(node.left) in node_to_idx:
+                left_idx = node_to_idx[id(node.left)]
+                adjacency[i][left_idx] = 1.0  # parent predicts left child
+
+            if node.right and id(node.right) in node_to_idx:
+                right_idx = node_to_idx[id(node.right)]
+                adjacency[i][right_idx] = 1.0  # parent predicts right child
+
+        # Normalize features if requested
+        if normalize:
+            if node_values and max(node_values) > min(node_values):
+                node_values = (np.array(node_values) - min(node_values)) / (
+                    max(node_values) - min(node_values) + 1e-32
+                )
+            if node_types and max(node_types) > min(node_types):
+                node_types = (np.array(node_types) - min(node_types)) / (
+                    max(node_types) - min(node_types) + 1e-32
+                )
+
+        return {
+            "node_features": np.column_stack([node_types, node_values]),
+            "adjacency": adjacency,
+            "mask": move_mask or np.zeros(n).tolist(),
+            "type": hash_type,
+            "time": [
+                int((self.max_moves - self.agent.moves_remaining) / self.max_moves * 10)
+            ],
+        }
+
+    def to_message_passing_observation(
+        self, parser: Optional[ExpressionParser] = None
+    ) -> Dict[str, Any]:
+        """Format for graph neural networks with explicit edge types"""
+        if parser is None:
+            parser = ExpressionParser()
+
+        expression = parser.parse(self.agent.problem)
+        nodes = expression.to_list()
+
+        # Node features
+        node_features = []
+        for node in nodes:
+            features = [
+                node.type_id,
+                float(getattr(node, "value", 0)) if hasattr(node, "value") else 0.0,
+                1.0 if node.is_leaf() else 0.0,  # leaf indicator
+                # Add more structural features as needed
+            ]
+            node_features.append(features)
+
+        # Edge list with types
+        edges = []
+        edge_types = []
+        node_to_idx = {id(node): i for i, node in enumerate(nodes)}
+
+        for i, node in enumerate(nodes):
+            # Parent -> Left child
+            if node.left and id(node.left) in node_to_idx:
+                left_idx = node_to_idx[id(node.left)]
+                edges.append([i, left_idx])
+                edge_types.append(0)  # 0 = left edge
+
+            # Parent -> Right child
+            if node.right and id(node.right) in node_to_idx:
+                right_idx = node_to_idx[id(node.right)]
+                edges.append([i, right_idx])
+                edge_types.append(1)  # 1 = right edge
+
+        return {
+            "node_features": np.array(node_features),
+            "edge_index": (
+                np.array(edges).T if edges else np.empty((2, 0))
+            ),  # PyG format
+            "edge_types": np.array(edge_types),
+            "num_nodes": len(nodes),
+        }
+
+    def to_flat_observation(
+        self,
+        move_mask: Optional[NodeMaskIntList] = None,
+        hash_type: Optional[ProblemTypeIntList] = None,
+        parser: Optional[ExpressionParser] = None,
+        normalize: bool = True,
+        max_seq_len: Optional[int] = None,
     ) -> MathyObservation:
         """Convert a state into an observation"""
         if parser is None:
@@ -265,6 +459,73 @@ class MathyEnvState(object):
         return MathyObservation(
             nodes=vectors, mask=move_mask, values=values, type=hash_type, time=[time]
         )
+
+    def to_hierarchical_observation(
+        self, parser: Optional[ExpressionParser] = None
+    ) -> Dict[str, Any]:
+        """Group nodes by tree depth for hierarchical predictive coding"""
+        if parser is None:
+            parser = ExpressionParser()
+
+        expression = parser.parse(self.agent.problem)
+        root = expression  # assuming root is the full expression
+
+        # Group nodes by depth level
+        levels = {}
+        node_to_level = {}
+
+        def assign_levels(node, depth=0):
+            if node is None:
+                return
+
+            if depth not in levels:
+                levels[depth] = []
+
+            levels[depth].append(node)
+            node_to_level[id(node)] = depth
+
+            if hasattr(node, "left") and node.left:
+                assign_levels(node.left, depth + 1)
+            if hasattr(node, "right") and node.right:
+                assign_levels(node.right, depth + 1)
+
+        assign_levels(root)
+
+        # Create level-wise features and connections
+        level_data = {}
+        for depth, nodes_at_level in levels.items():
+            features = []
+            parent_connections = []
+
+            for i, node in enumerate(nodes_at_level):
+                # Node features
+                features.append(
+                    [
+                        node.type_id,
+                        (
+                            float(getattr(node, "value", 0))
+                            if hasattr(node, "value")
+                            else 0.0
+                        ),
+                    ]
+                )
+
+                # Parent connections (for prediction)
+                if node.parent and id(node.parent) in node_to_level:
+                    parent_level = node_to_level[id(node.parent)]
+                    parent_idx = levels[parent_level].index(node.parent)
+                    parent_connections.append([parent_level, parent_idx, depth, i])
+
+            level_data[depth] = {
+                "features": np.array(features),
+                "parent_connections": parent_connections,
+            }
+
+        return {
+            "levels": level_data,
+            "max_depth": max(levels.keys()) if levels else 0,
+            "root_level": 0,
+        }
 
     @classmethod
     def from_string(cls, input_string: str) -> "MathyEnvState":
