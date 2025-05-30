@@ -9,7 +9,7 @@ on:
       - "*"
 
 jobs:
-  build:
+  types:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
