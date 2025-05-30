@@ -16,7 +16,7 @@ from mathy_core.util import TermEx, get_term_ex, get_terms
 
 from .. import time_step
 from ..env import MathyEnvProblem
-from ..state import MathyEnvState, MathyEnvStateStep, MathyObservation
+from ..state import MathyEnvState, MathyEnvStateStep, MathyObservationUnion
 from ..types import EnvRewards, MathyEnvDifficulty, MathyEnvProblemArgs
 from .poly_simplify import PolySimplify
 
@@ -58,7 +58,7 @@ class PolyHaystackLikeTerms(PolySimplify):
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """If all like terms are siblings."""
         agent = env_state.agent

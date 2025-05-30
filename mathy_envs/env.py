@@ -20,7 +20,12 @@ from mathy_core.tree import BinaryTreeNode, VisitStop
 from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
-from .state import MathyEnvState, MathyEnvStateStep, MathyObservation
+from .state import (
+    MathyEnvState,
+    MathyEnvStateStep,
+    MathyObservationUnion,
+    ObservationType,
+)
 from .time_step import is_terminal_transition
 from .types import ActionType, EnvRewards, Literal, MathyEnvProblem, MathyEnvProblemArgs
 
@@ -148,7 +153,7 @@ class MathyEnv:
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """Provide environment-specific transitions per timestep."""
         return None
@@ -162,14 +167,20 @@ class MathyEnv:
         raise NotImplementedError("This must be implemented in a subclass")
 
     def state_to_observation(
-        self, state: MathyEnvState, max_seq_len: Optional[int] = None
-    ) -> MathyObservation:
+        self,
+        state: MathyEnvState,
+        max_seq_len: Optional[int] = None,
+        obs_type: ObservationType = ObservationType.FLAT,
+    ) -> MathyObservationUnion:
         """Convert an environment state into an observation that can be used
         by a training agent."""
 
         action_mask = self.get_valid_moves(state)
         observation = state.to_observation(
-            move_mask=action_mask, parser=self.parser, max_seq_len=max_seq_len
+            move_mask=action_mask,
+            parser=self.parser,
+            max_seq_len=max_seq_len,
+            obs_type=obs_type,
         )
         return observation
 

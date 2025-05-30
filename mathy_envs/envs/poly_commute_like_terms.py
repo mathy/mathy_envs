@@ -7,7 +7,7 @@ from numpy.random import randint
 
 from .. import time_step
 from ..env import MathyEnvProblem
-from ..state import MathyEnvState, MathyObservation
+from ..state import MathyEnvState, MathyObservationUnion
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 from .poly_simplify import PolySimplify
 
@@ -30,7 +30,7 @@ class PolyCommuteLikeTerms(PolySimplify):
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """If the expression has any nodes that the DistributiveFactorOut rule
         can be applied to, the problem is solved."""

@@ -7,7 +7,7 @@ from numpy.random import randint, uniform
 
 from .. import time_step
 from ..env import MathyEnv, MathyEnvProblem
-from ..state import MathyEnvState, MathyObservation
+from ..state import MathyEnvState, MathyObservationUnion
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 
 
@@ -37,7 +37,7 @@ class PolySimplify(MathyEnv):
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """If there are no like terms."""
         if not has_like_terms(expression):

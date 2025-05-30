@@ -34,14 +34,14 @@ from typing import NamedTuple
 
 import numpy
 
-from mathy_envs.state import MathyObservation
+from mathy_envs.state import MathyObservationUnion
 
 
 class TimeStep(NamedTuple):
     step_type: numpy.ndarray
     reward: float
     discount: float
-    observation: MathyObservation
+    observation: MathyObservationUnion
 
     def __hash__(self) -> int:
         return hash(tuple(self))
@@ -59,13 +59,13 @@ class StepType(object):
 
 
 def transition(
-    observation: MathyObservation, reward: float, discount: float = 1.0
+    observation: MathyObservationUnion, reward: float, discount: float = 1.0
 ) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set equal to `StepType.MID`."""
     return TimeStep(StepType.MID, reward, discount, observation)
 
 
-def termination(observation: MathyObservation, reward: float) -> TimeStep:
+def termination(observation: MathyObservationUnion, reward: float) -> TimeStep:
     """Returns a `TimeStep` with `step_type` set to `StepType.LAST`."""
     return TimeStep(StepType.LAST, reward, 00, observation)
 

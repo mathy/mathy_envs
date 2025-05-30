@@ -93,19 +93,21 @@ def test_gym_probability_action_mask():
 
     from mathy_envs.gym import MathyGymEnv
 
-    env: MathyGymEnv = gym.make(
+    env: MathyGymEnv = gym.make(  # type:ignore
         "mathy-poly-easy-v0", mask_as_probabilities=True
-    )  # type:ignore
-    obs, info = env.reset()
+    )
+    obs, _ = env.reset()
+    assert isinstance(obs, np.ndarray)
     offset = -env.unwrapped.mathy.action_size  # type:ignore
     action_mask = np.array(obs[offset:])
     # When returned as probabilities, the mask sums to almost 1.0
     assert np.sum(action_mask) > 1.0 - 1e-4
 
-    env: MathyGymEnv = gym.make(
+    env: MathyGymEnv = gym.make(  # type:ignore
         "mathy-poly-easy-v0", mask_as_probabilities=False
-    )  # type:ignore
-    obs, info = env.reset()
+    )
+    obs, _ = env.reset()
+    assert isinstance(obs, np.ndarray)
     # When not as probabilities, the mask is a bunch of 1s and 0s
     action_mask = np.array(obs[offset:])
     assert np.sum(action_mask) > 1
