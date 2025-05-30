@@ -62,7 +62,10 @@ def test_state_graph_observation_structure():
     assert hasattr(obs, "num_nodes")
 
     # Check shapes make sense - should be padded to max_seq_len
-    assert obs.node_features.shape == (10, 2)  # padded to max_seq_len
+    assert obs.node_features.shape == (
+        10,
+        4,
+    )  # padded to max_seq_len, 4 features: [type_id, value, time, is_leaf]
     assert obs.adjacency.shape == (10, 10)  # padded adjacency matrix
     assert len(obs.action_mask) == 7 * 10  # num_rules * max_seq_len
 
@@ -70,8 +73,8 @@ def test_state_graph_observation_structure():
     assert obs.num_nodes > 0
     assert obs.num_nodes <= 10  # should be within max_seq_len
 
-    # Check feature dimensions
-    assert obs.node_features.shape[1] == 2  # [type_id, value]
+    # Check feature dimensions - now 4D: [type_id, value, time, is_leaf]
+    assert obs.node_features.shape[1] == 4
 
     # Check adjacency matrix properties
     assert obs.adjacency.dtype == np.float32
@@ -81,6 +84,17 @@ def test_state_graph_observation_structure():
     # Root (+) should connect to left (4x) and right (2*3)
     actual_adjacency = obs.adjacency[: obs.num_nodes, : obs.num_nodes]
     assert np.sum(actual_adjacency) > 0  # Should have some connections
+
+    # Test feature content - check that time and is_leaf features are present
+    actual_features = obs.node_features[: obs.num_nodes]
+    if obs.num_nodes > 0:
+        # Time feature should be consistent across all nodes (same timestep)
+        time_values = actual_features[:, 2]  # time is 3rd feature (index 2)
+        assert np.all(time_values == time_values[0])  # all nodes should have same time
+
+        # is_leaf feature should be binary
+        is_leaf_values = actual_features[:, 3]  # is_leaf is 4th feature (index 3)
+        assert np.all((is_leaf_values == 0.0) | (is_leaf_values == 1.0))
 
     # Test to_dict method
     obs_dict = obs.to_dict()
@@ -107,8 +121,8 @@ def test_state_hierarchical_observation_structure():
     # Narrow type with assertion
     assert isinstance(obs, MathyHierarchicalObservation)
 
-    # Check shapes are padded
-    assert obs.node_features.shape == (10, 2)  # padded to max_seq_len
+    # Check shapes are padded - now 4D features: [type_id, value, time, is_leaf]
+    assert obs.node_features.shape == (10, 4)  # padded to max_seq_len, 4 features
     assert obs.level_indices.shape == (10,)  # padded to max_seq_len
     assert len(obs.action_mask) == 7 * 10  # num_rules * max_seq_len
 
@@ -121,6 +135,17 @@ def test_state_hierarchical_observation_structure():
         actual_levels = obs.level_indices[: obs.num_nodes]
         assert np.all(actual_levels >= 0)
         assert np.all(actual_levels <= obs.max_depth)
+
+    # Test feature content - check that all 4 features are present
+    actual_features = obs.node_features[: obs.num_nodes]
+    if obs.num_nodes > 0:
+        # Time feature should be consistent across all nodes
+        time_values = actual_features[:, 2]  # time is 3rd feature (index 2)
+        assert np.all(time_values == time_values[0])  # all nodes should have same time
+
+        # is_leaf feature should be binary
+        is_leaf_values = actual_features[:, 3]  # is_leaf is 4th feature (index 3)
+        assert np.all((is_leaf_values == 0.0) | (is_leaf_values == 1.0))
 
     # Test to_dict method
     obs_dict = obs.to_dict()
@@ -149,9 +174,11 @@ def test_state_message_passing_observation_structure():
     assert hasattr(obs, "num_nodes")
     assert hasattr(obs, "num_edges")
 
-    # Check dimensions are padded
+    # Check dimensions are padded - now 4D features: [type_id, value, time, is_leaf]
     assert obs.node_features.shape[0] == 10  # padded to max_seq_len
-    assert obs.node_features.shape[1] >= 3  # at least [type_id, value, is_leaf]
+    assert (
+        obs.node_features.shape[1] == 4
+    )  # 4 features: [type_id, value, time, is_leaf]
     assert obs.edge_index.shape == (2, 20)  # (2, max_seq_len * 2)
     assert obs.edge_types.shape == (20,)  # max_seq_len * 2
     assert len(obs.action_mask) == 7 * 10  # num_rules * max_seq_len
@@ -173,6 +200,17 @@ def test_state_message_passing_observation_structure():
         # Edge types should be 0 (left) or 1 (right)
         assert np.all((actual_edge_types == 0) | (actual_edge_types == 1))
 
+    # Test feature content
+    actual_features = obs.node_features[: obs.num_nodes]
+    if obs.num_nodes > 0:
+        # Time feature should be consistent across all nodes
+        time_values = actual_features[:, 2]  # time is 3rd feature (index 2)
+        assert np.all(time_values == time_values[0])  # all nodes should have same time
+
+        # is_leaf feature should be binary
+        is_leaf_values = actual_features[:, 3]  # is_leaf is 4th feature (index 3)
+        assert np.all((is_leaf_values == 0.0) | (is_leaf_values == 1.0))
+
     # Test to_dict method
     obs_dict = obs.to_dict()
     assert "node_features" in obs_dict
@@ -181,6 +219,80 @@ def test_state_message_passing_observation_structure():
     assert "action_mask" in obs_dict
     assert "num_nodes" in obs_dict
     assert "num_edges" in obs_dict
+
+
+def test_consistent_feature_dimensions():
+    """Test that all observation types now use consistent 4D features"""
+    env_state = MathyEnvState(problem="2*x+3", num_rules=7)
+    max_seq_len = 10
+
+    # Test all observation types have 4D features
+    graph_obs = env_state.to_observation(
+        obs_type=ObservationType.GRAPH, max_seq_len=max_seq_len
+    )
+    hier_obs = env_state.to_observation(
+        obs_type=ObservationType.HIERARCHICAL, max_seq_len=max_seq_len
+    )
+    mp_obs = env_state.to_observation(
+        obs_type=ObservationType.MESSAGE_PASSING, max_seq_len=max_seq_len
+    )
+
+    # Narrow type with assertions
+    assert isinstance(graph_obs, MathyGraphObservation)
+    assert isinstance(hier_obs, MathyHierarchicalObservation)
+    assert isinstance(mp_obs, MathyMessagePassingObservation)
+
+    # All should have 4D features: [type_id, value, time, is_leaf]
+    assert graph_obs.node_features.shape[1] == 4
+    assert hier_obs.node_features.shape[1] == 4
+    assert mp_obs.node_features.shape[1] == 4
+
+    # Check that features are consistent across observation types
+    if graph_obs.num_nodes > 0 and hier_obs.num_nodes > 0 and mp_obs.num_nodes > 0:
+        # All should have same number of nodes (same underlying expression)
+        assert graph_obs.num_nodes == hier_obs.num_nodes == mp_obs.num_nodes
+
+        # Time feature should be the same across all observation types
+        graph_time = graph_obs.node_features[0, 2]  # time from first node
+        hier_time = hier_obs.node_features[0, 2]
+        mp_time = mp_obs.node_features[0, 2]
+
+        assert graph_time == hier_time == mp_time
+
+
+def test_feature_content_validation():
+    """Test that the 4D features contain expected content"""
+    env_state = MathyEnvState(problem="5+x", num_rules=7)
+    max_seq_len = 10
+
+    obs = env_state.to_observation(
+        obs_type=ObservationType.GRAPH, max_seq_len=max_seq_len, normalize=True
+    )
+
+    assert isinstance(obs, MathyGraphObservation)
+
+    if obs.num_nodes > 0:
+        actual_features = obs.node_features[: obs.num_nodes]
+
+        # Feature 0: type_id - should be normalized (0-1 range)
+        type_ids = actual_features[:, 0]
+        assert np.all(type_ids >= 0.0) and np.all(type_ids <= 1.0)
+
+        # Feature 1: value - should be normalized (0-1 range)
+        values = actual_features[:, 1]
+        assert np.all(values >= 0.0) and np.all(values <= 1.0)
+
+        # Feature 2: time - should be 0-1 range (episode progress)
+        time_vals = actual_features[:, 2]
+        assert np.all(time_vals >= 0.0) and np.all(time_vals <= 1.0)
+        # Time should be the same for all nodes in a single observation
+        assert np.all(time_vals == time_vals[0])
+
+        # Feature 3: is_leaf - should be binary (0.0 or 1.0)
+        is_leaf_vals = actual_features[:, 3]
+        assert np.all((is_leaf_vals == 0.0) | (is_leaf_vals == 1.0))
+        # For "5+x", we should have both leaf nodes (5, x) and non-leaf (+)
+        assert np.any(is_leaf_vals == 1.0)  # Should have at least one leaf
 
 
 def test_state_observation_consistency():
