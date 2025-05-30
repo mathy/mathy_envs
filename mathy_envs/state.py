@@ -130,7 +130,7 @@ class MathyMessagePassingObservation(NamedTuple):
 
 # Union type for all observation types
 MathyObservationUnion = Union[
-    NDArray[np.int32 | np.float32],  # Flat observation
+    NDArray[Union[np.int32, np.float32]],
     MathyGraphObservation,
     MathyHierarchicalObservation,
     MathyMessagePassingObservation,
@@ -593,7 +593,7 @@ class MathyEnvState(object):
         levels: Dict[int, List[MathExpression]] = {}
         node_to_level = {}
 
-        def assign_levels(node: MathExpression | None, depth: int = 0) -> None:
+        def assign_levels(node: Optional[MathExpression], depth: int = 0) -> None:
             if node is None:
                 return
 
