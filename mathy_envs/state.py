@@ -464,83 +464,6 @@ class MathyEnvState(object):
             num_nodes=n,
         )
 
-    def to_hierarchical_observation(
-        self,
-        move_mask: Optional[NodeMaskIntList] = None,
-        parser: Optional[ExpressionParser] = None,
-        max_seq_len: Optional[int] = None,
-        normalize: bool = True,
-    ) -> MathyHierarchicalObservation:
-        """Group nodes by tree depth for hierarchical predictive coding"""
-        if parser is None:
-            parser = ExpressionParser()
-        if max_seq_len is None:
-            max_seq_len = 128  # Default fallback
-
-        expression = parser.parse(self.agent.problem)
-        root = expression  # assuming root is the full expression
-
-        # Group nodes by depth level
-        levels: Dict[int, List[MathExpression]] = {}
-        node_to_level = {}
-
-        def assign_levels(node: Optional[MathExpression], depth: int = 0) -> None:
-            if node is None:
-                return
-
-            if depth not in levels:
-                levels[depth] = []
-
-            levels[depth].append(node)
-            node_to_level[id(node)] = depth
-
-            if hasattr(node, "left") and node.left:
-                assign_levels(node.left, depth + 1)
-            if hasattr(node, "right") and node.right:
-                assign_levels(node.right, depth + 1)
-
-        assign_levels(root)
-
-        # Collect all nodes and their level information
-        all_nodes: List[MathExpression] = []
-        level_indices: List[int] = []
-        max_depth = max(levels.keys()) if levels else 0
-
-        for level, level_nodes in levels.items():
-            for node in level_nodes:
-                all_nodes.append(node)
-                clamped_level = max(0, min(int(level), max_seq_len // 4 - 1))
-                level_indices.append(clamped_level)
-
-        # Get consistent node features
-        node_features_list, feature_dim = self._get_node_features(all_nodes, normalize)
-        actual_nodes = len(all_nodes)
-
-        # Pad features and level indices
-        padded_features = np.zeros((max_seq_len, feature_dim), dtype=np.float32)
-        padded_levels = np.zeros((max_seq_len,), dtype=np.int32)
-
-        if actual_nodes > 0:
-            node_features_array = np.array(node_features_list, dtype=np.float32)
-            level_indices_array = np.array(level_indices, dtype=np.int32)
-
-            padded_features[:actual_nodes] = node_features_array
-            padded_levels[:actual_nodes] = level_indices_array
-
-        # Process action mask
-        if move_mask is not None:
-            action_mask = self._process_action_mask(move_mask, max_seq_len)
-        else:
-            action_mask = np.zeros(self.num_rules * max_seq_len, dtype=np.float32)
-
-        return MathyHierarchicalObservation(
-            node_features=padded_features,
-            level_indices=padded_levels,
-            action_mask=action_mask,
-            max_depth=min(max_depth, max_seq_len // 4),
-            num_nodes=actual_nodes,
-        )
-
     def to_message_passing_observation(
         self,
         move_mask: Optional[NodeMaskIntList] = None,
@@ -675,6 +598,83 @@ class MathyEnvState(object):
         type_time = np.array(hash_type + [time], dtype="float32")
         obs = np.concatenate([type_time, nodes_array, values_array, flat_mask], axis=0)
         return obs
+
+    def to_hierarchical_observation(
+        self,
+        move_mask: Optional[NodeMaskIntList] = None,
+        parser: Optional[ExpressionParser] = None,
+        max_seq_len: Optional[int] = None,
+        normalize: bool = True,
+    ) -> MathyHierarchicalObservation:
+        """Group nodes by tree depth for hierarchical predictive coding"""
+        if parser is None:
+            parser = ExpressionParser()
+        if max_seq_len is None:
+            max_seq_len = 128  # Default fallback
+
+        expression = parser.parse(self.agent.problem)
+        root = expression  # assuming root is the full expression
+
+        # Group nodes by depth level
+        levels: Dict[int, List[MathExpression]] = {}
+        node_to_level = {}
+
+        def assign_levels(node: Optional[MathExpression], depth: int = 0) -> None:
+            if node is None:
+                return
+
+            if depth not in levels:
+                levels[depth] = []
+
+            levels[depth].append(node)
+            node_to_level[id(node)] = depth
+
+            if hasattr(node, "left") and node.left:
+                assign_levels(node.left, depth + 1)
+            if hasattr(node, "right") and node.right:
+                assign_levels(node.right, depth + 1)
+
+        assign_levels(root)
+
+        # Collect all nodes and their level information
+        all_nodes: List[MathExpression] = []
+        level_indices: List[int] = []
+        max_depth = max(levels.keys()) if levels else 0
+
+        for level, level_nodes in levels.items():
+            for node in level_nodes:
+                all_nodes.append(node)
+                clamped_level = max(0, min(int(level), max_seq_len // 4 - 1))
+                level_indices.append(clamped_level)
+
+        # Get consistent node features
+        node_features_list, feature_dim = self._get_node_features(all_nodes, normalize)
+        actual_nodes = len(all_nodes)
+
+        # Pad features and level indices
+        padded_features = np.zeros((max_seq_len, feature_dim), dtype=np.float32)
+        padded_levels = np.zeros((max_seq_len,), dtype=np.int32)
+
+        if actual_nodes > 0:
+            node_features_array = np.array(node_features_list, dtype=np.float32)
+            level_indices_array = np.array(level_indices, dtype=np.int32)
+
+            padded_features[:actual_nodes] = node_features_array
+            padded_levels[:actual_nodes] = level_indices_array
+
+        # Process action mask
+        if move_mask is not None:
+            action_mask = self._process_action_mask(move_mask, max_seq_len)
+        else:
+            action_mask = np.zeros(self.num_rules * max_seq_len, dtype=np.float32)
+
+        return MathyHierarchicalObservation(
+            node_features=padded_features,
+            level_indices=padded_levels,
+            action_mask=action_mask,
+            max_depth=min(max_depth, max_seq_len // 4),
+            num_nodes=actual_nodes,
+        )
 
     @classmethod
     def from_string(cls, input_string: str) -> "MathyEnvState":
