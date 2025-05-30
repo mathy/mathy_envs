@@ -367,7 +367,7 @@ class MathyEnvState(object):
         nodes: List[MathExpression] = expression.to_list()
         n = len(nodes)
 
-        # Node features (your existing logic)
+        # Node features
         node_types = []
         node_values = []
 
