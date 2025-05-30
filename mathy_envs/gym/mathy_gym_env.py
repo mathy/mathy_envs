@@ -198,15 +198,15 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
                 f"Action {action} has node index {node_idx} which is out of bounds for max_seq_len {self.mathy.max_seq_len}."
             )
 
-        if not self.action_space.mask[action] == 1.0:
-            print(
-                f"STEP ATTEMPT: action {action} -> (rule={rule_idx}, node={node_idx})"
-            )
-            print(f"  Expression: '{self.state.agent.problem}'")
-            print(f"  Action mask sum: {np.sum(self.action_space.mask)}")
-            print(
-                f"  Is action masked as valid: {self.action_space.mask[action] == 1.0}"
-            )
+        # if not self.action_space.mask[action] == 1.0:
+        #     print(
+        #         f"STEP ATTEMPT: action {action} -> (rule={rule_idx}, node={node_idx})"
+        #     )
+        #     print(f"  Expression: '{self.state.agent.problem}'")
+        #     print(f"  Action mask sum: {np.sum(self.action_space.mask)}")
+        #     print(
+        #         f"  Is action masked as valid: {self.action_space.mask[action] == 1.0}"
+        #     )
 
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         terminated = is_terminal_transition(transition)
