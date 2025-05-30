@@ -20,7 +20,12 @@ from mathy_core.tree import BinaryTreeNode, VisitStop
 from mathy_core.util import compare_expression_string_values, raise_with_history
 
 from . import time_step
-from .state import MathyEnvState, MathyEnvStateStep, MathyObservation, MathyObservationUnion, ObservationType
+from .state import (
+    MathyEnvState,
+    MathyEnvStateStep,
+    MathyObservationUnion,
+    ObservationType,
+)
 from .time_step import is_terminal_transition
 from .types import ActionType, EnvRewards, Literal, MathyEnvProblem, MathyEnvProblemArgs
 
@@ -148,7 +153,7 @@ class MathyEnv:
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """Provide environment-specific transitions per timestep."""
         return None

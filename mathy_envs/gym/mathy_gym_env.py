@@ -5,24 +5,18 @@ import numpy as np
 from gymnasium import error as gym_error
 from gymnasium import spaces
 from gymnasium.envs.registration import register
+from gymnasium.spaces.space import MaskNDArray
 from mathy_core.rule import ExpressionChangeRule
 from numpy.typing import NDArray
 
 from ..env import MathyEnv
-from ..state import (
-    MathyEnvState,
-    MathyGraphObservation,
-    MathyHierarchicalObservation,
-    MathyMessagePassingObservation,
-    MathyObservation,
-    ObservationType,
-)
+from ..state import MathyEnvState, MathyMessagePassingObservation, ObservationType
 from ..time_step import is_terminal_transition
 from ..types import ActionType, MathyEnvProblemArgs
 from .masked_discrete import MaskedDiscrete
 
 
-class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
+class MathyGymEnv(gym.Env[Any, np.int64]):
     """A small wrapper around Mathy envs to allow them to work with OpenAI Gym. The
     agents currently use this env wrapper, but it could be dropped in the future."""
 
@@ -62,7 +56,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
         # Setup action space
         self.action_size = self.mathy.action_size
         # Create the masked discrete action space
-        self.action_space = MaskedDiscrete(
+        self.action_space = MaskedDiscrete(  # type:ignore
             self.action_size, np.array([1] * self.action_size)
         )
 
@@ -111,6 +105,9 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
                 dummy_obs = dummy_env.state_to_observation(
                     dummy_state, max_seq_len=dummy_env.max_seq_len, obs_type=obs_type
                 )
+                assert isinstance(
+                    dummy_obs, MathyMessagePassingObservation
+                ), "Expected MathyMessagePassingObservation type"
                 feature_dim = (
                     dummy_obs.node_features.shape[1]
                     if dummy_obs.node_features.size > 0
@@ -176,12 +173,9 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
                 raise ValueError(f"Unsupported observation type: {obs_type}")
 
     def step(
-        self, action: Union[int, np.int64, ActionType]
-    ) -> Tuple[np.ndarray, Any, bool, bool, Dict[str, object]]:
+        self, action: Union[int, np.int64]
+    ) -> Tuple[Union[NDArray[Any], Dict[str, Any]], float, bool, bool, Dict[str, Any]]:
         assert self.state is not None, "call reset() before stepping the environment"
-
-        rule_idx = action // self.mathy.max_seq_len
-        node_idx = action % self.mathy.max_seq_len
 
         mask_sum = np.sum(self.action_space.mask)
         if not self.action_space.contains(action):
@@ -189,24 +183,6 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
                 f"Action {action} is not valid. Action mask sum: {mask_sum}. "
                 f"Action space mask: {self.action_space.mask}"
             )
-        if rule_idx >= len(self.mathy.rules):
-            raise ValueError(
-                f"Action {action} has rule index {rule_idx} which is out of bounds for rules length {len(self.mathy.rules)}."
-            )
-        if node_idx >= self.mathy.max_seq_len:  # Ensure node index is within bounds
-            raise ValueError(
-                f"Action {action} has node index {node_idx} which is out of bounds for max_seq_len {self.mathy.max_seq_len}."
-            )
-
-        # if not self.action_space.mask[action] == 1.0:
-        #     print(
-        #         f"STEP ATTEMPT: action {action} -> (rule={rule_idx}, node={node_idx})"
-        #     )
-        #     print(f"  Expression: '{self.state.agent.problem}'")
-        #     print(f"  Action mask sum: {np.sum(self.action_space.mask)}")
-        #     print(
-        #         f"  Is action masked as valid: {self.action_space.mask[action] == 1.0}"
-        #     )
 
         self.state, transition, change = self.mathy.get_next_state(self.state, action)
         terminated = is_terminal_transition(transition)
@@ -229,7 +205,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
         *,
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Any, Dict[Any, Any]]:
+    ) -> Tuple[Union[NDArray[Any], Dict[str, Any]], Dict[Any, Any]]:
         if self.state is not None:
             self.mathy.finalize_state(self.state)
         if self.repeat_problem:
@@ -243,7 +219,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
 
     def reset_with_input(
         self, problem_text: str, max_moves: int = 16
-    ) -> Tuple[np.ndarray, dict]:
+    ) -> Tuple[Union[NDArray[Any], Dict[str, Any]], Dict[Any, Any]]:
         # If the episode is being reset because it ended, assert the validity
         # of the last problem outcome
         if self.state is not None:
@@ -276,7 +252,7 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
 
     def _observe(
         self, state: MathyEnvState
-    ) -> Tuple[Union[np.ndarray, Dict[str, Any]], dict]:
+    ) -> Tuple[Union[NDArray[Any], Dict[str, Any]], Dict[Any, Any]]:
         """Observe the environment at the given state, updating the observation
         space and action space for the given state."""
 
@@ -289,12 +265,12 @@ class MathyGymEnv(gym.Env[NDArray[Any], np.int64]):
             mask_start_idx = 5 + (
                 2 * self.mathy.max_seq_len
             )  # type_time + nodes + values
-            flat_mask = observation[mask_start_idx:]
+            flat_mask: MaskNDArray = observation[mask_start_idx:].astype(np.int8)
             self.action_space.update_mask(flat_mask)
             return observation, {}
         else:
             # Structured observation - extract mask and convert to dict
-            flat_mask = observation.action_mask
+            flat_mask = observation.action_mask.astype(np.int8)
             self.action_space.update_mask(flat_mask)
             return observation.to_dict(), {}
 

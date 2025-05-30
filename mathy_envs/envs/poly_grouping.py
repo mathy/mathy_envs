@@ -7,7 +7,7 @@ from numpy.random import randint
 
 from .. import time_step
 from ..env import MathyEnv, MathyEnvProblem
-from ..state import MathyEnvState, MathyObservation
+from ..state import MathyEnvState, MathyObservationUnion
 from ..types import MathyEnvDifficulty, MathyEnvProblemArgs
 
 
@@ -30,7 +30,7 @@ class PolyGroupLikeTerms(MathyEnv):
         self,
         env_state: MathyEnvState,
         expression: MathExpression,
-        features: MathyObservation,
+        features: MathyObservationUnion,
     ) -> Optional[time_step.TimeStep]:
         """If all like terms are siblings."""
         term_nodes = get_terms(expression)

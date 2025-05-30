@@ -52,6 +52,9 @@ def test_state_graph_observation_structure():
     )  # Need num_rules for action mask
     obs = env_state.to_observation(obs_type=ObservationType.GRAPH, max_seq_len=10)
 
+    # Narrow type with assertion
+    assert isinstance(obs, MathyGraphObservation)
+
     # Check basic properties
     assert hasattr(obs, "node_features")
     assert hasattr(obs, "adjacency")
@@ -101,6 +104,9 @@ def test_state_hierarchical_observation_structure():
     assert hasattr(obs, "max_depth")
     assert hasattr(obs, "num_nodes")
 
+    # Narrow type with assertion
+    assert isinstance(obs, MathyHierarchicalObservation)
+
     # Check shapes are padded
     assert obs.node_features.shape == (10, 2)  # padded to max_seq_len
     assert obs.level_indices.shape == (10,)  # padded to max_seq_len
@@ -131,6 +137,9 @@ def test_state_message_passing_observation_structure():
     obs = env_state.to_observation(
         obs_type=ObservationType.MESSAGE_PASSING, max_seq_len=10
     )
+
+    # Narrow type with assertion
+    assert isinstance(obs, MathyMessagePassingObservation)
 
     # Check basic properties
     assert hasattr(obs, "node_features")
@@ -179,9 +188,7 @@ def test_state_observation_consistency():
     env_state = MathyEnvState(problem="2*x+3", num_rules=7)
     max_seq_len = 10
 
-    flat_obs = env_state.to_observation(
-        obs_type=ObservationType.FLAT, max_seq_len=max_seq_len
-    )
+    env_state.to_observation(obs_type=ObservationType.FLAT, max_seq_len=max_seq_len)
     graph_obs = env_state.to_observation(
         obs_type=ObservationType.GRAPH, max_seq_len=max_seq_len
     )
@@ -191,6 +198,11 @@ def test_state_observation_consistency():
     mp_obs = env_state.to_observation(
         obs_type=ObservationType.MESSAGE_PASSING, max_seq_len=max_seq_len
     )
+
+    # Narrow type with assertion
+    assert isinstance(graph_obs, MathyGraphObservation)
+    assert isinstance(hier_obs, MathyHierarchicalObservation)
+    assert isinstance(mp_obs, MathyMessagePassingObservation)
 
     # All should represent the same number of actual nodes
     # For flat observation, we need to determine actual nodes from the array structure
@@ -203,11 +215,10 @@ def test_state_observation_consistency():
     assert n_nodes_graph == n_nodes_hier == n_nodes_mp
 
     # All should have same action mask size
-    assert (
-        len(graph_obs.action_mask)
-        == len(hier_obs.action_mask)
-        == len(mp_obs.action_mask)
-    )
+    graph_len = len(graph_obs.action_mask)
+    hier_len = len(hier_obs.action_mask)
+    mp_len = len(mp_obs.action_mask)
+    assert graph_len == hier_len == mp_len == 7 * max_seq_len
 
 
 def test_state_complex_expression_observations():
@@ -228,6 +239,12 @@ def test_state_complex_expression_observations():
     mp_obs = env_state.to_observation(
         obs_type=ObservationType.MESSAGE_PASSING, max_seq_len=max_seq_len
     )
+
+    # Narrow type with assertion
+    assert isinstance(flat_obs, np.ndarray)
+    assert isinstance(graph_obs, MathyGraphObservation)
+    assert isinstance(hier_obs, MathyHierarchicalObservation)
+    assert isinstance(mp_obs, MathyMessagePassingObservation)
 
     # Should have multiple nodes for this complex expression
     assert isinstance(flat_obs, np.ndarray)
@@ -256,6 +273,9 @@ def test_state_observation_normalization():
         obs_type=ObservationType.GRAPH, normalize=True, max_seq_len=max_seq_len
     )
 
+    # Narrow type with assertion
+    assert isinstance(norm_graph, MathyGraphObservation)
+
     # Graph node features should be normalized
     actual_features = norm_graph.node_features[: norm_graph.num_nodes]
     if norm_graph.num_nodes > 0:
@@ -266,6 +286,7 @@ def test_state_observation_normalization():
     unnorm_graph = env_state.to_observation(
         obs_type=ObservationType.GRAPH, normalize=False, max_seq_len=max_seq_len
     )
+    assert isinstance(unnorm_graph, MathyGraphObservation)
 
     # Should have larger raw values for constants
     actual_unnorm_features = unnorm_graph.node_features[: unnorm_graph.num_nodes]
@@ -283,6 +304,8 @@ def test_state_edge_case_observations():
     single_obs = single_state.to_observation(
         obs_type=ObservationType.GRAPH, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(single_obs, MathyGraphObservation)
     assert single_obs.num_nodes == 1
     # No edges for single node
     actual_adjacency = single_obs.adjacency[
@@ -295,6 +318,8 @@ def test_state_edge_case_observations():
     var_obs = var_state.to_observation(
         obs_type=ObservationType.MESSAGE_PASSING, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(var_obs, MathyMessagePassingObservation)
     assert var_obs.num_nodes == 1
     assert var_obs.num_edges == 0  # No edges
 
@@ -302,6 +327,8 @@ def test_state_edge_case_observations():
     hier_obs = single_state.to_observation(
         obs_type=ObservationType.HIERARCHICAL, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(hier_obs, MathyHierarchicalObservation)
     assert hier_obs.max_depth == 0
     assert hier_obs.num_nodes == 1
 
@@ -312,7 +339,7 @@ def test_state_invalid_observation_type():
 
     with pytest.raises(ValueError, match="Unknown observation type"):
         # This should raise an error since we're bypassing the enum
-        env_state.to_observation(obs_type="invalid_type")
+        env_state.to_observation(obs_type="invalid_type")  # type:ignore[call-arg]
 
 
 def test_state_to_observation_normalization():
@@ -324,6 +351,8 @@ def test_state_to_observation_normalization():
     obs = env_state.to_observation(
         obs_type=ObservationType.GRAPH, normalize=False, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(obs, MathyGraphObservation)
     actual_features = obs.node_features[: obs.num_nodes]
     if obs.num_nodes > 0:
         assert (
@@ -333,6 +362,8 @@ def test_state_to_observation_normalization():
     norm = env_state.to_observation(
         obs_type=ObservationType.GRAPH, normalize=True, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(norm, MathyGraphObservation)
     actual_norm_features = norm.node_features[: norm.num_nodes]
     if norm.num_nodes > 0:
         assert np.max(actual_norm_features[:, 1]) == 1.0  # normalized value column
@@ -373,11 +404,15 @@ def test_state_encodes_hierarchy():
         obs_one = state_one.to_observation(
             move_mask=env.get_valid_moves(state_one), max_seq_len=env.max_seq_len
         )
+        # Narrow type with assertion
+        assert isinstance(obs_one, np.ndarray)
 
         state_two = MathyEnvState(problem=two, num_rules=len(env.rules))
         obs_two = state_two.to_observation(
             move_mask=env.get_valid_moves(state_two), max_seq_len=env.max_seq_len
         )
+        # Narrow type with assertion
+        assert isinstance(obs_two, np.ndarray)
 
         # Flat observations are now numpy arrays, so they should be different
         assert not np.array_equal(obs_one, obs_two)
@@ -450,6 +485,8 @@ def test_action_mask_processing():
     obs = env_state.to_observation(
         move_mask=raw_mask, obs_type=ObservationType.GRAPH, max_seq_len=max_seq_len
     )
+    # Narrow type with assertion
+    assert isinstance(obs, MathyGraphObservation)
 
     # Action mask should be flattened and padded
     expected_size = 7 * 10  # num_rules * max_seq_len

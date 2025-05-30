@@ -5,6 +5,7 @@ from zlib import adler32
 import numpy as np
 from mathy_core.expressions import ConstantExpression, MathExpression, MathTypeKeys
 from mathy_core.parser import ExpressionParser
+from numpy.typing import NDArray
 
 from .types import ActionType
 from .util import pad_array
@@ -129,7 +130,7 @@ class MathyMessagePassingObservation(NamedTuple):
 
 # Union type for all observation types
 MathyObservationUnion = Union[
-    np.ndarray,  # Flat observation
+    NDArray[np.int32 | np.float32],  # Flat observation
     MathyGraphObservation,
     MathyHierarchicalObservation,
     MathyMessagePassingObservation,
@@ -285,7 +286,7 @@ class MathyEnvState(object):
         raw_mask: NodeMaskIntList,
         max_seq_len: int,
         num_rules: Optional[int] = None,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float32]:
         """Convert raw action mask to padded flat format for action space"""
         if num_rules is None:
             num_rules = self.num_rules
@@ -294,7 +295,7 @@ class MathyEnvState(object):
         num_rules_actual, actual_nodes = raw_mask_array.shape
 
         # Ensure we pad to the expected total number of rules, not just the actual rules
-        # The gym wrapper expects num_rules total, even if some rules have no valid moves
+        # The gym wrapper expects num_rules total, even if some rules have no valid ones
         expected_num_rules = max(num_rules, num_rules_actual)
 
         # Pad the mask to (expected_num_rules, max_seq_len) then flatten
@@ -368,8 +369,8 @@ class MathyEnvState(object):
         n = len(nodes)
 
         # Node features
-        node_types = []
-        node_values = []
+        node_types: List[int] = []
+        node_values: List[float] = []
 
         for node in nodes:
             node_types.append(node.type_id)
@@ -397,11 +398,11 @@ class MathyEnvState(object):
             if node_values and max(node_values) > min(node_values):
                 node_values = (np.array(node_values) - min(node_values)) / (
                     max(node_values) - min(node_values) + 1e-32
-                )
+                )  # type:ignore
             if node_types and max(node_types) > min(node_types):
                 node_types = (np.array(node_types) - min(node_types)) / (
                     max(node_types) - min(node_types) + 1e-32
-                )
+                )  # type:ignore
 
         # Handle node feature padding
         expected_feature_dim = 2
@@ -516,7 +517,7 @@ class MathyEnvState(object):
         parser: Optional[ExpressionParser] = None,
         normalize: bool = True,
         max_seq_len: Optional[int] = None,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float32]:
         """Convert a state into a flat observation array"""
         if parser is None:
             parser = ExpressionParser()
@@ -589,10 +590,10 @@ class MathyEnvState(object):
         root = expression  # assuming root is the full expression
 
         # Group nodes by depth level
-        levels = {}
+        levels: Dict[int, List[MathExpression]] = {}
         node_to_level = {}
 
-        def assign_levels(node, depth=0):
+        def assign_levels(node: MathExpression | None, depth: int = 0) -> None:
             if node is None:
                 return
 
@@ -610,14 +611,14 @@ class MathyEnvState(object):
         assign_levels(root)
 
         # Collect all nodes and their level information
-        all_node_features = []
-        level_indices = []
+        all_node_features: list[list[float]] = []
+        level_indices: list[int] = []
         max_depth = max(levels.keys()) if levels else 0
 
         for level, level_nodes in levels.items():
             for node in level_nodes:
                 # Node features
-                features = [
+                features: list[float] = [
                     node.type_id,
                     (
                         float(getattr(node, "value", 0))
@@ -702,17 +703,19 @@ class MathyEnvState(object):
         return sep.join(out)
 
     @classmethod
-    def from_np(cls, input_bytes: np.ndarray) -> "MathyEnvState":
+    def from_np(cls, input_bytes: NDArray[np.uint8]) -> "MathyEnvState":
         """Convert a numpy object into a state object"""
-        input_string = "".join([chr(int(o)) for o in input_bytes.tolist()])
+        input_string = "".join(
+            [chr(int(o)) for o in input_bytes.tolist()]  # type:ignore
+        )
         state = cls.from_string(input_string)
         return state
 
-    def to_np(self, pad_to: Optional[int] = None) -> np.ndarray:
+    def to_np(self, pad_to: Optional[int] = None) -> NDArray[np.uint8]:
         """Convert a state object into a numpy representation"""
         string = self.to_string()
         if pad_to is not None:
             assert pad_to >= len(string), "input is larger than pad size!"
             to_pad = pad_to - len(string)
             string += " " * to_pad
-        return np.array([ord(c) for c in string])
+        return np.array([ord(c) for c in string], dtype=np.uint8)
