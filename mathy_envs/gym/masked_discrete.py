@@ -20,7 +20,8 @@ class MaskedDiscrete(spaces.Discrete):
         super(MaskedDiscrete, self).__init__(n)  # type:ignore
         self.update_mask(mask)
 
-    def sample(self, mask: MaskNDArray | None = None) -> np.int64:
+    def sample(self, mask: MaskNDArray | None = None) -> np.int64:  # type:ignore
+        """Generates a single random sample from this space, respecting the mask."""
         mask = self.mask if mask is None else mask
         probability = mask / np.sum(mask)
         return self.np_random.choice(self.n, p=probability)
