@@ -32,3 +32,27 @@ def test_envs_overview_tree_to_list():
 
 def test_envs_overview_list_to_observations():
     from ...docs.snippets.envs import lists_to_observations  # noqa
+
+
+def test_envs_overview_env_observations():
+    from ...docs.snippets.envs import env_observations  # noqa
+
+
+def test_envs_overview_graph_observations():
+    from ...docs.snippets.envs import graph_observations  # noqa
+
+
+def test_envs_overview_message_passing_observations():
+    from ...docs.snippets.envs import message_passing_observations  # noqa
+
+
+def test_envs_overview_flat_observations():
+    from ...docs.snippets.envs import flat_observations  # noqa
+
+
+def test_envs_overview_hierarchical_observations():
+    from ...docs.snippets.envs import hierarchical_observations  # noqa
+
+
+def test_envs_overview_unified_observations():
+    from ...docs.snippets.envs import unified_observations  # noqa
