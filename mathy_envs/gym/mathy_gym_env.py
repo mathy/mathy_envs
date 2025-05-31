@@ -60,22 +60,33 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
             self.action_size, np.array([1] * self.action_size)
         )
 
+        # CRITICAL: Calculate action mask size consistently
+        # The action mask is flattened from (num_rules, max_seq_len) -> (num_rules * max_seq_len,)
+        num_rules = len(self.mathy.rules)
+        max_seq_len = self.mathy.max_seq_len
+        action_mask_size = num_rules * max_seq_len
+
         # Define observation space based on observation type
         if obs_type == ObservationType.FLAT:
             # Original flat observation space
-            mask = len(self.mathy.rules) * self.mathy.max_seq_len
-            values = self.mathy.max_seq_len
-            nodes = self.mathy.max_seq_len
-            type_dim = 4
+            # Structure: [type_hash(4), time(1), nodes(max_seq_len), values(max_seq_len), action_mask(num_rules*max_seq_len)]
+            type_dim = 4  # get_problem_hash returns 4 values
             time_dim = 1
-            obs_size = mask + values + nodes + type_dim + time_dim
+            nodes_dim = max_seq_len
+            values_dim = max_seq_len
+            mask_dim = action_mask_size
+            obs_size = type_dim + time_dim + nodes_dim + values_dim + mask_dim
+
             self.observation_space = spaces.Box(
-                low=0, high=1, shape=(obs_size,), dtype=np.float32
+                low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float32
             )
         else:
-            # For structured observations, use consistent max_nodes from max_seq_len
-            max_nodes = self.mathy.max_seq_len
+            # For structured observations, use consistent dimensions
+            max_nodes = max_seq_len
             max_edges = max_nodes * 2  # For message passing
+            node_feature_dim = (
+                4  # [type_id, value, time, is_leaf] - consistent across all types
+            )
 
             if obs_type == ObservationType.GRAPH:
                 self.observation_space = spaces.Dict(
@@ -83,7 +94,7 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
                         "node_features": spaces.Box(
                             low=-np.inf,
                             high=np.inf,
-                            shape=(max_nodes, 2),
+                            shape=(max_nodes, node_feature_dim),
                             dtype=np.float32,
                         ),
                         "adjacency": spaces.Box(
@@ -93,39 +104,18 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
                             dtype=np.float32,
                         ),
                         "action_mask": spaces.Box(
-                            low=0, high=1, shape=(self.action_size,), dtype=np.float32
+                            low=0, high=1, shape=(action_mask_size,), dtype=np.float32
                         ),
                         "num_nodes": spaces.Discrete(max_nodes + 1),
                     }
                 )
             elif obs_type == ObservationType.MESSAGE_PASSING:
-                # Get a sample observation to determine feature dimension
-                dummy_env = env_class(**env_kwargs)
-                dummy_state, _ = dummy_env.get_initial_state(env_problem_args)
-                dummy_obs = dummy_env.state_to_observation(
-                    dummy_state, max_seq_len=dummy_env.max_seq_len, obs_type=obs_type
-                )
-                assert isinstance(
-                    dummy_obs, MathyMessagePassingObservation
-                ), "Expected MathyMessagePassingObservation type"
-                feature_dim = (
-                    dummy_obs.node_features.shape[1]
-                    if dummy_obs.node_features.size > 0
-                    else 3
-                )
-
-                max_nodes = self.mathy.max_seq_len
-                max_edges = max_nodes * 2
-
                 self.observation_space = spaces.Dict(
                     {
                         "node_features": spaces.Box(
                             low=-np.inf,
                             high=np.inf,
-                            shape=(
-                                max_nodes,
-                                feature_dim,
-                            ),  # Use actual feature dimension
+                            shape=(max_nodes, node_feature_dim),
                             dtype=np.float32,
                         ),
                         "edge_index": spaces.Box(
@@ -141,7 +131,7 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
                             dtype=np.int64,
                         ),
                         "action_mask": spaces.Box(
-                            low=0, high=1, shape=(self.action_size,), dtype=np.float32
+                            low=0, high=1, shape=(action_mask_size,), dtype=np.float32
                         ),
                         "num_nodes": spaces.Discrete(max_nodes + 1),
                         "num_edges": spaces.Discrete(max_edges + 1),
@@ -153,7 +143,7 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
                         "node_features": spaces.Box(
                             low=-np.inf,
                             high=np.inf,
-                            shape=(max_nodes, 2),
+                            shape=(max_nodes, node_feature_dim),
                             dtype=np.float32,
                         ),
                         "level_indices": spaces.Box(
@@ -163,7 +153,7 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
                             dtype=np.int32,
                         ),
                         "action_mask": spaces.Box(
-                            low=0, high=1, shape=(self.action_size,), dtype=np.float32
+                            low=0, high=1, shape=(action_mask_size,), dtype=np.float32
                         ),
                         "max_depth": spaces.Discrete(max_nodes // 4 + 1),
                         "num_nodes": spaces.Discrete(max_nodes + 1),
@@ -262,9 +252,11 @@ class MathyGymEnv(gym.Env[Any, np.int64]):
 
         if isinstance(observation, np.ndarray):
             # Flat observation - extract action mask from the end of the array
-            mask_start_idx = 5 + (
-                2 * self.mathy.max_seq_len
-            )  # type_time + nodes + values
+            # Structure: [type_hash(4), time(1), nodes(max_seq_len), values(max_seq_len), action_mask(num_rules*max_seq_len)]
+            type_time_dim = 4 + 1  # type_hash(4) + time(1)
+            nodes_values_dim = 2 * self.mathy.max_seq_len  # nodes + values
+            mask_start_idx = type_time_dim + nodes_values_dim
+
             flat_mask: MaskNDArray = observation[mask_start_idx:].astype(np.int8)
             self.action_space.update_mask(flat_mask)
             return observation, {}
