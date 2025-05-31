@@ -1,6 +1,7 @@
+import copy
 import random
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import numpy as np
 from mathy_core import STOP
@@ -54,6 +55,7 @@ class MathyEnv:
     invalid_action_response: InvalidActionResponses
     previous_state_penalty: bool
     preferred_term_commute: bool
+    excluded_problems: Set[str]
 
     def __init__(
         self,
@@ -63,9 +65,10 @@ class MathyEnv:
         verbose: bool = False,
         invalid_action_response: InvalidActionResponses = "raise",
         reward_discount: float = 0.99,
-        max_seq_len: int = 128,
+        max_seq_len: int = 200,
         previous_state_penalty: bool = True,
         preferred_term_commute: bool = False,
+        excluded_problems: Optional[Set[str]] = None,
     ):
         self.discount = reward_discount
         self.previous_state_penalty = previous_state_penalty
@@ -74,6 +77,8 @@ class MathyEnv:
         self.max_seq_len = max_seq_len
         self.invalid_action_response = invalid_action_response
         self.parser = ExpressionParser()
+        self.excluded_problems = excluded_problems or set()  # Initialize exclusion set
+
         if rules is None:
             self.rules = MathyEnv.core_rules(
                 preferred_term_commute=preferred_term_commute
@@ -88,6 +93,101 @@ class MathyEnv:
                 f"Unknown invalid action behavior: {self.invalid_action_response}\n"
                 f"Expected one of: {', '.join(INVALID_ACTION_RESPONSES)}"
             )
+
+    def create_evaluation_splits(
+        self,
+        eval_size: int = 100,
+        test_size: int = 50,
+        seed: Optional[int] = None,
+        max_attempts: int = 10000,
+    ) -> Tuple[Set[str], Set[str]]:
+        """
+        Generate fixed evaluation and test problem sets.
+
+        Args:
+            eval_size: Number of problems for evaluation set
+            test_size: Number of problems for test set
+            seed: Random seed for reproducible generation
+            max_attempts: Maximum attempts to generate unique problems
+
+        Returns:
+            Tuple of (eval_problems, test_problems) as sets of problem strings
+        """
+        if seed is not None:
+            original_state = random.getstate()
+            random.seed(seed)
+            np.random.seed(seed)
+
+        try:
+            eval_problems = set()
+            test_problems = set()
+            attempts = 0
+
+            # Generate evaluation problems
+            while len(eval_problems) < eval_size and attempts < max_attempts:
+                try:
+                    config = MathyEnvProblemArgs()
+                    problem = self.problem_fn(config)
+                    problem_text = problem.text.strip()
+
+                    # Skip if already exists in any set
+                    if (
+                        problem_text not in eval_problems
+                        and problem_text not in test_problems
+                        and problem_text not in self.excluded_problems
+                    ):
+                        eval_problems.add(problem_text)
+                except Exception:
+                    # Skip problems that fail to generate
+                    pass
+                attempts += 1
+
+            # Generate test problems
+            attempts = 0
+            while len(test_problems) < test_size and attempts < max_attempts:
+                try:
+                    config = MathyEnvProblemArgs()
+                    problem = self.problem_fn(config)
+                    problem_text = problem.text.strip()
+
+                    # Skip if already exists in any set
+                    if (
+                        problem_text not in eval_problems
+                        and problem_text not in test_problems
+                        and problem_text not in self.excluded_problems
+                    ):
+                        test_problems.add(problem_text)
+                except Exception:
+                    # Skip problems that fail to generate
+                    pass
+                attempts += 1
+
+            if len(eval_problems) < eval_size or len(test_problems) < test_size:
+                print(
+                    f"Warning: Could only generate {len(eval_problems)}/{eval_size} eval problems "
+                    f"and {len(test_problems)}/{test_size} test problems"
+                )
+
+            # Add generated problems to exclusion set to prevent them from appearing in training
+            self.excluded_problems.update(eval_problems)
+            self.excluded_problems.update(test_problems)
+
+            return eval_problems, test_problems
+
+        finally:
+            if seed is not None:
+                random.setstate(original_state)
+
+    def add_to_exclusion_set(self, problems: Union[Set[str], List[str], str]) -> None:
+        """Add problems to the exclusion set"""
+        if isinstance(problems, str):
+            self.excluded_problems.add(problems.strip())
+        elif isinstance(problems, (set, list)):
+            self.excluded_problems.update(p.strip() for p in problems)
+
+    def get_exclusion_set(self) -> Set[str]:
+        """Get a copy of the current exclusion set"""
+        return copy.deepcopy(self.excluded_problems)
 
     @classmethod
     def core_rules(cls, preferred_term_commute: bool = False) -> List[BaseRule]:
@@ -488,11 +588,41 @@ class MathyEnv:
         return chosen_rule, action
 
     def get_initial_state(
-        self, params: Optional[MathyEnvProblemArgs] = None, print_problem: bool = True
+        self,
+        params: Optional[MathyEnvProblemArgs] = None,
+        print_problem: bool = True,
+        specific_problem: Optional[str] = None,
+        max_generation_attempts: int = 1000,
     ) -> Tuple[MathyEnvState, MathyEnvProblem]:
-        """Generate an initial MathyEnvState for an episode"""
+        """Generate an initial MathyEnvState for an episode
+
+        Args:
+            params: Problem generation parameters
+            print_problem: Whether to print the problem if verbose
+            specific_problem: If provided, create state for this specific problem
+            max_generation_attempts: Max attempts to find non-excluded problem
+        """
         config = params if params is not None else MathyEnvProblemArgs()
-        prob: MathyEnvProblem = self.problem_fn(config)
+
+        # If specific problem is provided, use it directly
+        if specific_problem is not None:
+            # Create a mock problem object with the specific text
+            prob = MathyEnvProblem(text=specific_problem, complexity=5)
+        else:
+            # Generate a problem that's not in the exclusion set
+            attempts = 0
+            while attempts < max_generation_attempts:
+                prob = self.problem_fn(config)
+                if prob.text.strip() not in self.excluded_problems:
+                    break
+                attempts += 1
+            else:
+                # If we can't find a non-excluded problem, proceed with warning
+                print(
+                    f"Warning: Could not generate non-excluded problem after {max_generation_attempts} attempts"
+                )
+                prob = self.problem_fn(config)
+
         self.valid_actions_mask_cache = dict()
         self.valid_rules_cache = dict()
         self.parser.clear_cache()
