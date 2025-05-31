@@ -1,5 +1,5 @@
 from enum import Enum, IntEnum
-from typing import Any, Dict, List, NamedTuple, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 from zlib import adler32
 
 import numpy as np
@@ -348,6 +348,62 @@ class MathyEnvState(object):
         else:
             raise ValueError(f"Unknown observation type: {obs_type}")
 
+    def _get_node_features(
+        self,
+        nodes: List[MathExpression],
+        normalize: bool = True,
+    ) -> Tuple[List[List[float]], int]:
+        """Get consistent node features across all observation types.
+
+        Returns:
+            Tuple of (node_features_list, feature_dim)
+
+        Node features: [type_id, value, time, is_leaf]
+        """
+        # Calculate time feature (same logic as flat observation)
+        step = int(self.max_moves - self.agent.moves_remaining)
+        time_normalized = step / self.max_moves if self.max_moves > 0 else 0.0
+
+        node_features: List[List[float]] = []
+        node_types: List[float] = []
+        node_values: List[float] = []
+
+        for node in nodes:
+            node_types.append(node.type_id)
+            if isinstance(node, ConstantExpression):
+                node_values.append(float(node.value) if node.value else 0.0)
+            else:
+                node_values.append(0.0)
+
+        # Apply normalization if requested
+        if normalize and node_types:
+            node_types_array = np.array(node_types, dtype=np.float32)
+            if node_types_array.sum() != 0.0:
+                node_types_array = (node_types_array - node_types_array.min()) / (
+                    node_types_array.max() - node_types_array.min() + 1e-32
+                )
+            node_types = node_types_array.tolist()  # type:ignore
+
+        if normalize and node_values:
+            node_values_array = np.array(node_values, dtype=np.float32)
+            if node_values_array.sum() != 0.0:
+                node_values_array = (node_values_array - node_values_array.min()) / (
+                    node_values_array.max() - node_values_array.min() + 1e-32
+                )
+            node_values = node_values_array.tolist()  # type:ignore
+
+        # Build consistent feature vectors: [type_id, value, time, is_leaf]
+        for i, node in enumerate(nodes):
+            features = [
+                node_types[i],
+                node_values[i],
+                time_normalized,
+                1.0 if node.is_leaf() else 0.0,
+            ]
+            node_features.append(features)
+
+        return node_features, 4  # feature_dim = 4
+
     def to_graph_observation(
         self,
         move_mask: Optional[NodeMaskIntList] = None,
@@ -368,16 +424,8 @@ class MathyEnvState(object):
         nodes: List[MathExpression] = expression.to_list()
         n = len(nodes)
 
-        # Node features
-        node_types: List[int] = []
-        node_values: List[float] = []
-
-        for node in nodes:
-            node_types.append(node.type_id)
-            if isinstance(node, ConstantExpression):
-                node_values.append(float(node.value) if node.value else 0.0)
-            else:
-                node_values.append(0.0)
+        # Get consistent node features
+        node_features_list, feature_dim = self._get_node_features(nodes, normalize)
 
         # Create adjacency matrix using the tree structure
         adjacency = np.zeros((n, n), dtype=np.float32)
@@ -393,26 +441,11 @@ class MathyEnvState(object):
                 right_idx = node_to_idx[id(node.right)]
                 adjacency[i][right_idx] = 1.0  # parent predicts right child
 
-        # Normalize features if requested
-        if normalize:
-            if node_values and max(node_values) > min(node_values):
-                node_values = (np.array(node_values) - min(node_values)) / (
-                    max(node_values) - min(node_values) + 1e-32
-                )  # type:ignore
-            if node_types and max(node_types) > min(node_types):
-                node_types = (np.array(node_types) - min(node_types)) / (
-                    max(node_types) - min(node_types) + 1e-32
-                )  # type:ignore
-
-        # Handle node feature padding
-        expected_feature_dim = 2
-        node_features = np.column_stack([node_types, node_values])
-
         # Pad node features to max_seq_len
-        padded_features = np.zeros(
-            (max_seq_len, expected_feature_dim), dtype=np.float32
-        )
-        padded_features[:n] = node_features
+        padded_features = np.zeros((max_seq_len, feature_dim), dtype=np.float32)
+        if node_features_list:
+            node_features_array = np.array(node_features_list, dtype=np.float32)
+            padded_features[:n] = node_features_array
 
         # Pad adjacency matrix
         padded_adjacency = np.zeros((max_seq_len, max_seq_len), dtype=np.float32)
@@ -436,6 +469,7 @@ class MathyEnvState(object):
         move_mask: Optional[NodeMaskIntList] = None,
         parser: Optional[ExpressionParser] = None,
         max_seq_len: Optional[int] = None,
+        normalize: bool = True,
     ) -> MathyMessagePassingObservation:
         """Format for graph neural networks with explicit edge types"""
         if parser is None:
@@ -447,27 +481,18 @@ class MathyEnvState(object):
         nodes = expression.to_list()
         actual_nodes = len(nodes)
 
-        # Node features
-        node_features = []
-        for node in nodes:
-            features = [
-                node.type_id,
-                float(getattr(node, "value", 0)) if hasattr(node, "value") else 0.0,
-                1.0 if node.is_leaf() else 0.0,  # leaf indicator
-                # Add more structural features as needed
-            ]
-            node_features.append(features)
+        # Get consistent node features
+        node_features_list, feature_dim = self._get_node_features(nodes, normalize)
 
-        # Determine feature dimension and pad node features
-        actual_feature_dim = len(node_features[0]) if node_features else 3
-        padded_features = np.zeros((max_seq_len, actual_feature_dim), dtype=np.float32)
-        if node_features:
-            node_features_array = np.array(node_features, dtype=np.float32)
+        # Pad node features
+        padded_features = np.zeros((max_seq_len, feature_dim), dtype=np.float32)
+        if node_features_list:
+            node_features_array = np.array(node_features_list, dtype=np.float32)
             padded_features[:actual_nodes] = node_features_array
 
         # Edge list with types
-        edges = []
-        edge_types = []
+        edges: List[List[int]] = []
+        edge_types: List[int] = []
         node_to_idx = {id(node): i for i, node in enumerate(nodes)}
 
         for i, node in enumerate(nodes):
@@ -579,6 +604,7 @@ class MathyEnvState(object):
         move_mask: Optional[NodeMaskIntList] = None,
         parser: Optional[ExpressionParser] = None,
         max_seq_len: Optional[int] = None,
+        normalize: bool = True,
     ) -> MathyHierarchicalObservation:
         """Group nodes by tree depth for hierarchical predictive coding"""
         if parser is None:
@@ -611,32 +637,26 @@ class MathyEnvState(object):
         assign_levels(root)
 
         # Collect all nodes and their level information
-        all_node_features: list[list[float]] = []
-        level_indices: list[int] = []
+        all_nodes: List[MathExpression] = []
+        level_indices: List[int] = []
         max_depth = max(levels.keys()) if levels else 0
 
         for level, level_nodes in levels.items():
             for node in level_nodes:
-                # Node features
-                features: list[float] = [
-                    node.type_id,
-                    (
-                        float(getattr(node, "value", 0))
-                        if hasattr(node, "value")
-                        else 0.0
-                    ),
-                ]
-                all_node_features.append(features)
+                all_nodes.append(node)
                 clamped_level = max(0, min(int(level), max_seq_len // 4 - 1))
                 level_indices.append(clamped_level)
 
-        # Convert to numpy arrays and pad
-        actual_nodes = len(all_node_features)
-        padded_features = np.zeros((max_seq_len, 2), dtype=np.float32)
+        # Get consistent node features
+        node_features_list, feature_dim = self._get_node_features(all_nodes, normalize)
+        actual_nodes = len(all_nodes)
+
+        # Pad features and level indices
+        padded_features = np.zeros((max_seq_len, feature_dim), dtype=np.float32)
         padded_levels = np.zeros((max_seq_len,), dtype=np.int32)
 
         if actual_nodes > 0:
-            node_features_array = np.array(all_node_features, dtype=np.float32)
+            node_features_array = np.array(node_features_list, dtype=np.float32)
             level_indices_array = np.array(level_indices, dtype=np.int32)
 
             padded_features[:actual_nodes] = node_features_array
